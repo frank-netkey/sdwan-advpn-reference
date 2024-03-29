@@ -10,7 +10,8 @@
 {# If options are not customized, use the project-wide defaults #}
 {% set options = project.profiles[profile].options|default(
         {
-          'advpn2': project.advpn2|default(true)
+          'advpn2': project.advpn2|default(true),
+          'dynamic_bgp': project.dynamic_bgp|default(false)
         }
     )
 %}
@@ -119,7 +120,7 @@ config system sdwan
       set mode {{ options.sdwan_mode|default('sla') }}
       set dst "CORP_LAN"
       set src "CORP_LAN"
-      set tie-break fib-best-match
+      set tie-break {{ 'fib-best-match' if not options.advpn2 and not options.dynamic_bgp else 'zone' }}
       {% if options.sdwan_mode|default('sla') == 'sla'  %}
       config sla
         edit "HUB"
