@@ -26,6 +26,11 @@
 {% set hub2hub_zone = 'hub2hub_overlay' %}
 {% set create_lan_zone = true %}
 {% set lan_zone = 'lan_zone' %}
+{% set create_vrf_leak_zone = true %}
+{% set pevrf_leak_zone = 'pevrf_leak_zone' %}
+{% set vrf_leak_zone = 'vrfs_leak_zone' %}
+{% set vrf_leak_summary = '10.200.255.0/24' %}
+{% set pe_vrf = 1 %}
 
 {% set create_lan_dhcp_server = true %}
 {% set dhcp_server_startip = 4 %}
@@ -36,22 +41,28 @@
 {% set edge_cert_template = 'Edge' %}
 {% set psk = 'S3cr3t!' %}
 
-{% set overlay_stickiness = true %}
+{% set overlay_stickiness = false %}
 {% set intrareg_hub2hub = false %}
 {% set intrareg_advpn = true %}
 {% set multireg = true %}
-{% set multireg_advpn = false %}
-{% set multireg_lo = false %}
+{% set multireg_advpn = true %}
 {% set hub_hc_server = '10.200.99.1' %}
 
+{% set advpn2 = true %}
+{% set dynamic_bgp = false %}
+
+{% set force_cleanup = false %}
+{% set strict_peering = true %}
+{% set strict_firewall = true %}
+{% set strict_pbr = true %}
+
 {% set short_community_as = '65000' %}
-{% set monitoring_enhancements = false %}
+{% set lan_summary =  '10.0.0.0/8' %}
 #}
 
 {#  Mandatory Global Definitions #}
 {#
 {% set lo_summary =  %}
-{% set lan_summary =  %}
 #}
 
 {# Regions #}
@@ -61,6 +72,14 @@
       'as': ,
       'lan_summary': ,
       'lo_summary': ,
+      'vrfs': [ 
+        {
+          'id': ,
+          'lan_summary': ,
+          'lo_summary':
+        },
+        ...
+      ],
       'hubs': [  ]
     },
     ...
@@ -73,6 +92,15 @@
 {% set profiles = {
     'ProfileName': {
       'ha': false,
+      'options': {
+          'advpn2': ,
+          'dynamic_bgp': ,
+          'force_cleanup' ,
+          'strict_peering' ,
+          'strict_firewall' ,
+          'strict_pbr' ,
+          'leak_npu_link' ,
+      },
       'bridges': [
         {
           'name': ,
@@ -85,6 +113,7 @@
           'name': ,
           'role': ,
           'ip': ,
+          'vrf': ,
           'src_ip': ,
           'vlanid': ,
           'parent': ,
@@ -96,8 +125,10 @@
           'dhcp_server': ,
           'dhcp_relay': ,
           'dhcp_relay_servers': ,
+          'allow_dia': ,
           'dia': ,
-          'advertise' 
+          'advertise' ,
+          'fex'
         },
         ...
       ]
@@ -112,10 +143,18 @@
 {% set hubs = {
     'HubName': {
       'lo_bgp': ,
+      'peering': {
+        'PeeringName': {
+          'dynamic_bgp': ,
+          'lo_summary': 
+        },
+        ...
+      },
       'overlays': {
         'OverlayName': {
           'wan_ip': ,
-          'network_id': 
+          'network_id': ,
+          'hub2hub': 
         },
         ...
       }
