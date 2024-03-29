@@ -11,15 +11,18 @@
 {% set pe_vrf = project.pe_vrf|default(1) if multi_vrf else 0 %}
 {% set vrf_rt_as = project.vrf_rt_as|default('65000') %}
 
-{# If options are not customized, use the project-wide defaults #}
-{% set options = project.profiles[profile].options|default(
-        {
-          'advpn2': project.advpn2|default(true),
-          'dynamic_bgp': project.dynamic_bgp|default(false),
-          'strict_peering': project.strict_peering|default(true),
-          'force_cleanup': project.force_cleanup|default(false)
-        }
-    )
+{# Options: project-wide defaults #}
+{% set options = {
+    'advpn2': project.advpn2|default(true),
+    'dynamic_bgp': project.dynamic_bgp|default(false),
+    'strict_peering': project.strict_peering|default(true),
+    'force_cleanup': project.force_cleanup|default(false)
+  }
+%}
+{# Options can be selectively overriden in profile #}
+{% set _ = options.update(
+      project.profiles[profile].options|default({})
+   ) 
 %}
 
 {# For regions with 4-byte ASN, use a dummy 2-byte ASN for BGP communities (4-byte ASN is not supported in communities) #}
@@ -70,7 +73,7 @@ config router bgp
   set tag-resolve-mode {{ 'merge' if not options.advpn2 else 'disable' }}
   set graceful-restart enable
   config neighbor
-    {{ 'purge' if options.strict_peering|default(true) or "" }}
+    {{ 'purge' if options.strict_peering or "" }}
     {% for h in project.regions[region].hubs %}
     edit {{ project.hubs[h].lo_bgp }}
       set soft-reconfiguration enable
@@ -105,7 +108,7 @@ config router bgp
   end
 
   {% if options.dynamic_bgp %}
-    {% if options.strict_peering|default(true) %}
+    {% if options.strict_peering %}
     config neighbor-range
       purge
     end
@@ -170,7 +173,7 @@ config router bgp
       set route-map "LAN_TAG"
     next
     {{ network_advertised.append(i.ip) or "" }}
-    {% elif options.force_cleanup|default(false) %}
+    {% elif options.force_cleanup %}
     delete {{ 110 + loop.index }}
     {% endif %}
     {% endfor %}

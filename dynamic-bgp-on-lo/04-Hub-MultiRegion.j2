@@ -13,12 +13,15 @@
 {% set hub2hub_ol = [] %}
 {% set my_index = project.regions[region].hubs.index(hostname) + 1 %}
 
-{# If options are not customized, use the project-wide defaults #}
-{% set options = project.profiles[profile].options|default(
-        {
-          'force_cleanup': project.force_cleanup|default(false)
-        }
-    )
+{# Options: project-wide defaults #}
+{% set options = {
+    'force_cleanup': project.force_cleanup|default(false)
+  }
+%}
+{# Options can be selectively overriden in profile #}
+{% set _ = options.update(
+      project.profiles[profile].options|default({})
+   ) 
 %}
 
 {# Start: multi-regional config #}
@@ -207,7 +210,7 @@ config router bgp
 end
 
 {# End: multi-regional config #}
-{% elif options.force_cleanup|default(false) %}
+{% elif options.force_cleanup %}
 config router static
   delete 103
 end

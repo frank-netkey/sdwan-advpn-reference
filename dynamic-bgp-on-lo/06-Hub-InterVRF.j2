@@ -11,19 +11,22 @@
 {% set pe_vrf = project.pe_vrf|default(1) if multi_vrf else 0 %}
 {% set vrf_leak_summary = project.vrf_leak_summary|default('10.200.255.0/24') %}
 
-{# If options are not customized, use the project-wide defaults #}
-{% set options = project.profiles[profile].options|default(
-        {
-          'leak_npu_link': ''
-        }
-    )
+{# Options: project-wide defaults #}
+{% set options = {
+    'leak_npu_link': ''
+  }
+%}
+{# Options can be selectively overriden in profile #}
+{% set _ = options.update(
+      project.profiles[profile].options|default({})
+   ) 
 %}
 
 {# Internet access: VRF Leak to PE #}
 {% for i in project.profiles[profile].interfaces if i.vrf is defined %}
 {% if i.name is defined and i.allow_dia|default(false) %}
   {# Configure software vdom-link interface if model is VM #}
-  {% if options.leak_npu_link|default('') == '' %}
+  {% if options.leak_npu_link == '' %}
   config system vdom-link
     edit "vrf{{ i.vrf }}_leak"
     next
@@ -105,7 +108,7 @@
     next
   end
   {% endif %}
-  {% if options.leak_npu_link|default('') == '' %}
+  {% if options.leak_npu_link == '' %}
   config system vdom-link
     delete "vrf{{ i.vrf }}_leak"
   end

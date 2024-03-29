@@ -7,12 +7,15 @@
 
 {% import 'Project' as project with context %}
 
-{# If options are not customized, use the project-wide defaults #}
-{% set options = project.profiles[profile].options|default(
-        {
-          'strict_firewall': project.strict_firewall|default(true)
-        }
-    )
+{# Options: project-wide defaults #}
+{% set options = {
+    'strict_firewall': project.strict_firewall|default(true)
+  }
+%}
+{# Options can be selectively overriden in profile #}
+{% set _ = options.update(
+      project.profiles[profile].options|default({})
+   ) 
 %}
 
 {% set ol_zones = ['overlay'] %}
@@ -25,7 +28,7 @@ config firewall address
   next
 end
 config firewall policy
-  {{ 'purge' if options.strict_firewall|default(true) or "" }}
+  {{ 'purge' if options.strict_firewall or "" }}
   edit 1
     set name "Edge-Edge"
     set srcintf {{ ol_zones|join(' ') }}

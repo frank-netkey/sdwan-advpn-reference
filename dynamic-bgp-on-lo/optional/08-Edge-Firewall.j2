@@ -9,12 +9,15 @@
 
 {% set multi_vrf = true if project.regions[region].vrfs|default([]) else false %}
 
-{# If options are not customized, use the project-wide defaults #}
-{% set options = project.profiles[profile].options|default(
-        {
-          'strict_firewall': project.strict_firewall|default(true)
-        }
-    )
+{# Options: project-wide defaults #}
+{% set options = {
+    'strict_firewall': project.strict_firewall|default(true)
+  }
+%}
+{# Options can be selectively overriden in profile #}
+{% set _ = options.update(
+      project.profiles[profile].options|default({})
+   ) 
 %}
 
 config firewall address
@@ -29,7 +32,7 @@ config firewall ippool
   next
 end
 config firewall policy
-  {{ 'purge' if options.strict_firewall|default(true) or "" }}
+  {{ 'purge' if options.strict_firewall or "" }}
   edit 1
     set name "Corporate"
     set srcintf {{ project.lan_zone|default('lan_zone') }} "overlay"

@@ -7,13 +7,17 @@
 
 {% import 'Project' as project with context %}
 
-{# If options are not customized, use the project-wide defaults #}
-{% set options = project.profiles[profile].options|default(
-        {
-          'advpn2': project.advpn2|default(true),
-          'dynamic_bgp': project.dynamic_bgp|default(false)
-        }
-    )
+{# Options: project-wide defaults #}
+{% set options = {
+    'advpn2': project.advpn2|default(true),
+    'dynamic_bgp': project.dynamic_bgp|default(false),
+    'sdwan_mode': 'sla'
+  }
+%}
+{# Options can be selectively overriden in profile #}
+{% set _ = options.update(
+      project.profiles[profile].options|default({})
+   ) 
 %}
 
 {% set hub_sla_members = [ ] %}
@@ -117,17 +121,17 @@ config system sdwan
   {% for h in project.regions[region].hubs %}
     edit {{loop.index}}
       set name "Corporate-H{{loop.index}}"
-      set mode {{ options.sdwan_mode|default('sla') }}
+      set mode {{ options.sdwan_mode }}
       set dst "CORP_LAN"
       set src "CORP_LAN"
       set tie-break {{ 'fib-best-match' if not options.advpn2 and not options.dynamic_bgp else 'zone' }}
-      {% if options.sdwan_mode|default('sla') == 'sla'  %}
+      {% if options.sdwan_mode == 'sla'  %}
       config sla
         edit "HUB"
           set id 1
         next
       end
-      {% elif options.sdwan_mode|default('sla') == 'priority' %}
+      {% elif options.sdwan_mode == 'priority' %}
       set health-check "HUB"
       {% endif %}
       # Using Hub {{h}}

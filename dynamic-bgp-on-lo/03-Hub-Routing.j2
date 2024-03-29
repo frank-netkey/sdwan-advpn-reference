@@ -22,14 +22,17 @@
     )
 %}
 
-{# If options are not customized, use the project-wide defaults #}
-{% set options = project.profiles[profile].options|default(
-        {
-          'strict_peering': project.strict_peering|default(true),
-          'strict_pbr': project.strict_pbr|default(true),
-          'force_cleanup': project.force_cleanup|default(false)
-        }
-    )
+{# Options: project-wide defaults #}
+{% set options = {
+    'strict_peering': project.strict_peering|default(true),
+    'strict_pbr': project.strict_pbr|default(true),
+    'force_cleanup': project.force_cleanup|default(false)
+  }
+%}
+{# Options can be selectively overriden in profile #}
+{% set _ = options.update(
+      project.profiles[profile].options|default({})
+   ) 
 %}
 
 {# For regions with 4-byte ASN, use a dummy 2-byte ASN for BGP communities (4-byte ASN is not supported in communities) #}
@@ -68,7 +71,7 @@ config router bgp
   set recursive-next-hop enable
   set recursive-inherit-priority enable
   set graceful-restart enable
-  {% if options.strict_peering|default(true) %}
+  {% if options.strict_peering %}
   config neighbor-range
     purge
   end
@@ -124,7 +127,7 @@ config router bgp
       set prefix {{ i.ip|ipaddr(0) }}
     next
     {{ network_advertised.append(i.ip) or "" }}
-    {% elif options.force_cleanup|default(false) %}
+    {% elif options.force_cleanup %}
     delete {{ 110 + loop.index }}
     {% endif %}
     {% endfor %}
@@ -151,7 +154,7 @@ config router bgp
   {% endif %}
 end
 
-{% if options.strict_pbr|default(true) %}
+{% if options.strict_pbr %}
 config router policy
   purge
 end
@@ -176,7 +179,7 @@ config router static
     set vrf {{ pe_vrf }}
     set comment "Avoid potential leak of corporate traffic to underlay"
   next
-  {% elif options.force_cleanup|default(false) %}
+  {% elif options.force_cleanup %}
   delete 101
   {% endif %}
   edit 102
