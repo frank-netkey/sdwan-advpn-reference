@@ -82,20 +82,22 @@ config system interface
     set type fext-wan
     {% endif %}  
 
-    {# QoS: Add shaping profile and in/outbandwidth only if interface is of type wan and meta fields are both defined #}
-    {% if i.role == 'wan' and i.outbandwidth is defined %}
-    set estimated-upstream-bandwidth {{ i.outbandwidth }}
-      {% if i.shaping_profile is defined %}
-      set outbandwidth {{ i.outbandwidth }}
-      set egress-shaping-profile {{ i.shaping_profile }}
-      {% endif %}
+    {# QoS: Add shaping profile and in/outbandwidth for WAN interfaces #}
+    {% if i.role == 'wan' %}
+    unset egress-shaping-profile
+    unset ingress-shaping-profile
+    unset outbandwidth
+    unset inbandwidth
+    {{'un' if not i.outbandwidth|default()}}set estimated-upstream-bandwidth {{ i.outbandwidth|default() }}
+    {{'un' if not i.inbandwidth|default()}}set estimated-downstream-bandwidth {{ i.inbandwidth|default() }}
+    {% if i.shaping_profile is defined and i.inbandwidth is defined %}
+    set inbandwidth {{ i.inbandwidth }}
+    set ingress-shaping-profile {{ i.shaping_profile }}
     {% endif %}
-    {% if i.role == 'wan' and i.inbandwidth is defined %}
-    set estimated-downstream-bandwidth {{ i.inbandwidth }}
-      {% if i.shaping_profile is defined %}
-      set inbandwidth {{ i.inbandwidth }}
-      set ingress-shaping-profile {{ i.shaping_profile }}
-      {% endif %}
+    {% if i.shaping_profile is defined and i.outbandwidth is defined %}
+    set outbandwidth {{ i.outbandwidth }}
+    set egress-shaping-profile {{ i.shaping_profile }}
+    {% endif %}
     {% endif %}
 
     {# DHCP Relay #}
