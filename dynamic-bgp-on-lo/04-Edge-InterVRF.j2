@@ -13,7 +13,8 @@
 
 {# Options: project-wide defaults #}
 {% set options = {
-    'leak_npu_link': ''
+    'leak_npu_link': '',
+    'force_cleanup': project.force_cleanup|default(false)
   }
 %}
 {# Options can be selectively overriden in profile #}
@@ -23,6 +24,23 @@
 %}
 
 {# Internet access: VRF Leak to PE #}
+{% set pevrf_leak_intf = [] %}
+{% set vrf_leak_intf = [] %}
+{% set vrf_cleanup_list = [] %}
+
+{# DEVDB_system_interface: look for old inter-VRF links to cleanup (FMG 7.4+) #}
+{# Looking for interface names 'vrf<id>_leak0' #}
+{% for i in DEVDB_system_interface|default() if i.name|replace('vrf','')|replace('_leak0','')|int %}
+{{ vrf_cleanup_list.append(i.name|replace('vrf','')|replace('_leak0','')|int) or "" }}
+{% endfor %}
+{# Force cleanup based on region's VRF list (offline rendering - since DEVDB_system_interface is not available) #}
+{% if options.force_cleanup %}
+  {% for v in project.regions[region].vrfs|default([]) %}
+  {{ (vrf_cleanup_list.append(v.id) if v.id not in vrf_cleanup_list) or "" }}
+  {% endfor %}
+{% endif %}
+
+{# Creating inter-VRF links #}
 {% for i in project.profiles[profile].interfaces if i.vrf is defined %}
 {% if i.name is defined and i.allow_dia|default(false) %}
   {# Configure software vdom-link interface if model is VM #}
@@ -73,16 +91,9 @@
   end
   {% endif %}
 
-  {# Configure a zone for easier policy management of vrf leaking #}
-  {% if project.create_vrf_leak_zone|default(true) and i.role == 'lan' %}
-  config system zone
-    edit "{{ project.pevrf_leak_zone|default('pevrf_leak_zone') }}"
-      append interface "vrf{{ i.vrf }}_leak0"
-    next
-    edit "{{ project.vrf_leak_zone|default('vrfs_leak_zone') }}"
-      append interface "vrf{{ i.vrf }}_leak1"
-    next
-  end
+  {% if i.role == 'lan' %}
+  {{  pevrf_leak_intf.append("vrf"~i.vrf~"_leak0") or "" }}
+  {{  vrf_leak_intf.append("vrf"~i.vrf~"_leak1") or "" }}
   {% endif %}
 
   {# Add default route to pe_vrf for each vrf #}
@@ -93,30 +104,37 @@
     next
   end  
 
-{% else %}
-  {# Cleanup: delete the current VRF leaking config #}
+  {# Remove VRF ID from the cleanup list #}
+  {{ (vrf_cleanup_list.remove(i.vrf) if i.vrf in vrf_cleanup_list) or "" }}
+
+{% endif %}
+{% endfor %}
+
+{# Configure a zone for easier policy management of vrf leaking #}
+{% if project.create_vrf_leak_zone|default(true) %}
+config system zone
+  edit "{{ project.pevrf_leak_zone|default('pevrf_leak_zone') }}"
+    {{'un' if not pevrf_leak_intf}}set interface {{ pevrf_leak_intf|join(' ') }}
+  next
+  edit "{{ project.vrf_leak_zone|default('vrfs_leak_zone') }}"
+    {{'un' if not vrf_leak_intf}}set interface {{ vrf_leak_intf|join(' ') }}
+  next
+end
+{% endif %}
+
+{# Cleanup: delete old VRF leaking config #}
+{% for v in vrf_cleanup_list|unique %}
   config router static
-    delete {{ 4000 + i.vrf }}
+    delete {{ 4000 + v }}
   end
-  {% if project.create_vrf_leak_zone|default(true) %}
-  config system zone
-    edit "{{ project.pevrf_leak_zone|default('pevrf_leak_zone') }}"
-      unselect interface "vrf{{ i.vrf }}_leak0"
-    next
-    edit "{{ project.vrf_leak_zone|default('vrfs_leak_zone') }}"
-      unselect interface "vrf{{ i.vrf }}_leak1"
-    next
-  end
-  {% endif %}
   {% if options.leak_npu_link == '' %}
   config system vdom-link
-    delete "vrf{{ i.vrf }}_leak"
+    delete "vrf{{ v }}_leak"
   end
   {% else %}
   config system interface 
-    delete "vrf{{ i.vrf }}_leak0"
-    delete "vrf{{ i.vrf }}_leak1"
+    delete "vrf{{ v }}_leak0"
+    delete "vrf{{ v }}_leak1"
   end
   {% endif %}
-{% endif %}
 {% endfor %}
