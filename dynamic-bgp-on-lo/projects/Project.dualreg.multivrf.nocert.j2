@@ -87,19 +87,22 @@
           'name': isp1_intf,
           'role': 'wan',
           'ol_type': 'ISP1',
-          'ip': 'dhcp'
+          'ip': 'dhcp',
+          'dia': true
         },
         {
           'name': isp2_intf,
           'role': 'wan',
           'ol_type': 'ISP2',
-          'ip': 'dhcp'
+          'ip': 'dhcp',
+          'dia': true
         },
         {
           'name': mpls_intf,
           'role': 'wan',
           'ol_type': 'MPLS',
-          'ip': 'dhcp'
+          'ip': 'dhcp',
+          'transport_group': 2
         },
         {
           'name': lan_intf,

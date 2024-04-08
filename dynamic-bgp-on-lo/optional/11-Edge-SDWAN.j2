@@ -50,6 +50,7 @@ config system sdwan
       {% endif %}
       set cost {{ 10 if i.backup|default(false) else 0 }}
       # Best priority, used for Internet access in implicit rule / local-out
+      set priority 1
       # Gateway is fetched from DHCP
     next
     {{ dia_members.append(ns.mbr_i) or "" }}
@@ -98,6 +99,7 @@ config system sdwan
         next
       end
     next
+    {% if dia_members %}
     edit "Internet"
       set server "www.fortinet.com"
       set sla-fail-log-period 10
@@ -106,6 +108,9 @@ config system sdwan
       set update-static-route disable
       set members {{ dia_members|join(' ') }}
     next
+    {% else %}
+    delete "Internet"
+    {% endif %}
   end
   config neighbor
   {% for h in project.regions[region].hubs %}
@@ -138,6 +143,7 @@ config system sdwan
       set priority-members {{ hub_rule_members[loop.index0]|join(' ') }}
     next
   {% endfor %}
+  {% if dia_members %}
     edit 10
       set name "Local-Breakout"
       set mode priority
@@ -146,6 +152,9 @@ config system sdwan
       # Using best underlay (DIA) link
       set priority-members {{ dia_members|join(' ') }}
     next
+  {% else %}
+    delete 10
+  {% endif %}
   end
   {% if options.advpn2 %}
   config zone
