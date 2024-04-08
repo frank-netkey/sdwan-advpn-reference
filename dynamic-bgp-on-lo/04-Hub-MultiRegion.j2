@@ -148,15 +148,6 @@ config router static
   next
 end
 config router bgp
-  config aggregate-address
-    purge
-    {% for v in project.regions[region].vrfs|default(
-                [{ 'lan_summary': project.regions[region].lan_summary }]) %}
-    edit 0
-      set prefix {{ v.lan_summary }}
-    next
-    {% endfor %}
-  end
   config network
     edit 103
       set prefix {{ project.regions[region].lo_summary }}

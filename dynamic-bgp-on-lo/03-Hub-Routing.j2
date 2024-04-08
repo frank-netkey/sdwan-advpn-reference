@@ -78,6 +78,9 @@ config router bgp
   config neighbor-group
     purge
   end
+  config aggregate-address
+    purge
+  end
   {% endif %}
   {% for p in peering %}  
   config neighbor-group
@@ -111,6 +114,23 @@ config router bgp
     next
   end
   {% endfor %}
+
+  {# If lan_summary is defined, advertise it to Spokes #}
+  {# Preference: regional per-vrf lan_summary > regional lan_summary > global lan_summary #}
+  {% if project.regions[region].vrfs is defined or 
+        project.regions[region].lan_summary is defined or 
+        project.lan_summary is defined %}
+  config aggregate-address
+    {% for v in project.regions[region].vrfs|default(
+                [{ 'lan_summary': project.regions[region].lan_summary|default(project.lan_summary) }]) %}
+    {% if v.lan_summary is defined %}
+    edit 0
+      set prefix {{ v.lan_summary }}
+    next
+    {% endif %}
+    {% endfor %}    
+  end
+  {% endif %}
 
   config network
     edit 102
