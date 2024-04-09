@@ -160,10 +160,14 @@ config router route-map
     config rule
       purge
       edit 1
+        {# Advertise specific LAN prefixes behind this Hub #}
+        set match-tag 100
+      next
+      edit 2
         set match-ip-address "LAN_REGIONAL_SUMMARY"
         set set-metric {{ 100 if my_index == 2 else 0 }}
       next
-      edit 2
+      edit 3
         {# Do not readvertise regional loopback summary to remote Edges and other regions #}
         set match-ip-address "LO_REGIONAL_SUMMARY"
         set set-community no-advertise

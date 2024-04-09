@@ -59,6 +59,13 @@ config router route-map
       next
     end
   next
+  edit "LAN_TAG"
+    config rule
+      edit 1
+        set set-tag 100
+      next
+    end
+  next  
 end
 
 config router bgp
@@ -145,6 +152,7 @@ config router bgp
           not i.ip in network_advertised %}
     edit {{ 110 + loop.index }}
       set prefix {{ i.ip|ipaddr(0) }}
+      set route-map "LAN_TAG"
     next
     {{ network_advertised.append(i.ip) or "" }}
     {% elif options.force_cleanup %}
