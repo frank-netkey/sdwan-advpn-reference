@@ -128,12 +128,14 @@ config router bgp
         project.regions[region].lan_summary is defined or 
         project.lan_summary is defined %}
   config aggregate-address
+    {% set network_aggregated = [] %}
     {% for v in project.regions[region].vrfs|default(
                 [{ 'lan_summary': project.regions[region].lan_summary|default(project.lan_summary) }]) %}
-    {% if v.lan_summary is defined %}
-    edit 0
-      set prefix {{ v.lan_summary }}
+    {% if v.lan_summary is defined and not v.lan_summary|ipaddr(0) in network_aggregated %}
+    edit {{ 110 + loop.index }}
+      set prefix {{ v.lan_summary|ipaddr(0) }}
     next
+    {{ network_aggregated.append(v.lan_summary|ipaddr(0)) or "" }}
     {% endif %}
     {% endfor %}    
   end
