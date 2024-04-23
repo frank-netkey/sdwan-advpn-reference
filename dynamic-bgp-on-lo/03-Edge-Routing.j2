@@ -167,12 +167,12 @@ config router bgp
     {% if i.name is defined and 
           i.ip is defined and 
           i.advertise|default(true) and
-          not i.ip in network_advertised %}
+          not i.ip|ipaddr(0) in network_advertised %}
     edit {{ 110 + loop.index }}
       set prefix {{ i.ip|ipaddr(0) }}
       set route-map "LAN_TAG"
     next
-    {{ network_advertised.append(i.ip) or "" }}
+    {{ network_advertised.append(i.ip|ipaddr(0)) or "" }}
     {% elif options.force_cleanup %}
     delete {{ 110 + loop.index }}
     {% endif %}
