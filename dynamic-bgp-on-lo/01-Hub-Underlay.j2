@@ -14,9 +14,7 @@
 config system settings
   set location-id {{ loopback|ipaddr('address') }}
   set tcp-session-without-syn enable
-  {% if multi_vrf %}
   set allow-subnet-overlap enable
-  {% endif %}
 end
 config system global
   {% if not project.profiles[profile].ha|default(false) and hostname is defined %}
