@@ -15,8 +15,7 @@
 {% set options = {
     'advpn2': project.advpn2|default(true),
     'dynamic_bgp': project.dynamic_bgp|default(false),
-    'strict_peering': project.strict_peering|default(true),
-    'force_cleanup': project.force_cleanup|default(false)
+    'strict_peering': project.strict_peering|default(true)
   }
 %}
 {# Options can be selectively overriden in profile #}
@@ -162,6 +161,7 @@ config router bgp
   {% endif %}
 
   config network
+    {{ 'purge' if options.strict_peering or "" }}
     {% set network_advertised = [] %}
     {% for i in project.profiles[profile].interfaces if i.role == 'lan' %}
     {% if i.name is defined and 
@@ -173,8 +173,6 @@ config router bgp
       set route-map "LAN_TAG"
     next
     {{ network_advertised.append(i.ip|ipaddr(0)) or "" }}
-    {% elif options.force_cleanup %}
-    delete {{ 110 + loop.index }}
     {% endif %}
     {% endfor %}
   end
