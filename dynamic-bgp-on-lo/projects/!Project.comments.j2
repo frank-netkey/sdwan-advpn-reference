@@ -61,6 +61,8 @@
 {% set strict_pbr = true %}
 
 {% set short_community_as = '65000' %}
+{% set regex_as = '' %}
+{% set hub_strict_syn = false %}
 {% set lan_summary =  '10.0.0.0/8' %}
 #}
 
@@ -99,12 +101,12 @@
       'options': {
           'advpn2': ,
           'dynamic_bgp': ,
-          'force_cleanup' ,
-          'strict_peering' ,
-          'strict_firewall' ,
-          'strict_pbr' ,
-          'leak_npu_link' ,
-          'sdwan_mode'
+          'force_cleanup': ,
+          'strict_peering': ,
+          'strict_firewall': ,
+          'strict_pbr': ,
+          'leak_npu_link': ,
+          'sdwan_mode':
       },
       'bridges': [
         {
@@ -131,9 +133,10 @@
           'dhcp_relay': ,
           'dhcp_relay_servers': ,
           'allow_dia': ,
-          'dia': ,
           'advertise' ,
-          'fex'
+          'fex',
+          'dia': ,
+          'transport_group': 
         },
         ...
       ]

@@ -120,7 +120,7 @@ config router bgp
     next
   end
   config neighbor-range
-    edit {{ loop.index }}
+    edit {{ 100 + loop.index }}
       set prefix {{ peering[p].lo_summary }}
       set neighbor-group "{{ p }}"
     next

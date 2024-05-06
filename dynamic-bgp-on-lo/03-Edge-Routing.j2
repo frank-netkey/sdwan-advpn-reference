@@ -29,6 +29,28 @@
                       if project.regions[region].as|int < 65536 
                       else project.short_community_as|default('65000') %}
 
+config router aspath-list
+  edit "SDWAN_AS"
+    config rule
+      purge
+      {% if project.regex_as is defined %}
+      edit 1
+        set action permit
+        set regexp "{{ project.regex_as }}"
+      next
+      {% else %}
+      {# List ASNs of all defined regions #}
+      {% for r in project.regions %}
+      edit {{ loop.index }}
+        set action permit
+        set regexp "{{ project.regions[r].as }}"
+      next
+      {% endfor %}
+      {% endif %}
+    end
+  next
+end
+
 config router route-map
   {% for i in range(1,3) %}
   edit "H{{loop.index}}_TAG"
@@ -106,25 +128,26 @@ config router bgp
     {% endfor %}
   end
 
-  {% if options.dynamic_bgp %}
-    {% if options.strict_peering %}
-    config neighbor-range
-      purge
-    end
-    config neighbor-group
-      purge
-    end
-    {% endif %}
+  {% if options.strict_peering %}
+  config neighbor-range
+    purge
+  end
   config neighbor-group
-    {# TODO: Replace with remote-as-filter support #}
-    {% for r in project.regions %}
-    edit "DYN_EDGE_{{r}}"
+    purge
+  end
+  {% endif %}
+  {% if options.dynamic_bgp %}
+  config neighbor-group
+    edit "DYN_EDGE"
       set ebgp-enforce-multihop enable 
       set soft-reconfiguration enable
       set capability-graceful-restart enable
+      {# TODO: Remove after bug fix #}
+      set allowas-in-enable enable
+      {# END TODO: Remove after bug fix #}
       set advertisement-interval 1
       set next-hop-self enable
-      set remote-as {{ project.regions[r].as }}
+      set remote-as-filter "SDWAN_AS"
       set interface "Lo"
       set update-source "Lo"
       set passive disable
@@ -137,27 +160,13 @@ config router bgp
       unset capability-graceful-restart-vpnv4
       {% endif %}
     next
-    {% endfor %}
   end
   config neighbor-range
-    {# TODO: Replace with remote-as-filter support #}
-    {% for r in project.regions %}
-    edit {{ loop.index }}
-      set prefix {{ project.regions[r].lo_summary }}
-      set neighbor-group "DYN_EDGE_{{r}}"
+    edit 101
+      set prefix {{ project.lo_summary }}
+      set neighbor-group "DYN_EDGE"
     next
-    {% endfor %}
   end  
-  {% else %}
-  {# TODO: Replace with remote-as-filter support #}
-  config neighbor-range
-    {# delete 1 #}
-    purge
-  end
-  config neighbor-group
-    {# delete "DYN_EDGE" #}
-    purge
-  end
   {% endif %}
 
   config network
