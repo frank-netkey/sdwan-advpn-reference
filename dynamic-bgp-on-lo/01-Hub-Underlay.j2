@@ -102,7 +102,7 @@ config system zone
     {% for i in project.profiles[profile].interfaces if i.role == 'lan' and i.name is defined %}
     {{  lan_intf.append(i.name) or "" }}
     {% endfor %}
-    set interface {{ lan_intf|join(' ') }}
+    {{'un' if not lan_intf}}set interface {{ lan_intf|join(' ') }}
   next
 end
 {% endif %}
