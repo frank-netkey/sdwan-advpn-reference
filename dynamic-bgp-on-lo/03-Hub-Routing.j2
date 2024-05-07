@@ -124,11 +124,11 @@ config router bgp
 
   {# If lan_summary is defined, advertise it to Spokes #}
   {# Preference: regional per-vrf lan_summary > regional lan_summary > global lan_summary #}
+  {% set network_aggregated = [] %}
   {% if project.regions[region].vrfs is defined or 
         project.regions[region].lan_summary is defined or 
         project.lan_summary is defined %}
   config aggregate-address
-    {% set network_aggregated = [] %}
     {% for v in project.regions[region].vrfs|default(
                 [{ 'lan_summary': project.regions[region].lan_summary|default(project.lan_summary) }]) %}
     {% if v.lan_summary is defined and not v.lan_summary|ipaddr(0) in network_aggregated %}
