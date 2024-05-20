@@ -191,6 +191,8 @@ end
 {% endif %}
 
 {# Enable DHCP Server on LAN interfaces #}
+{% set startip = project.dhcp_server_startip|default(4) %}
+{% set endip = project.dhcp_server_endip|default(-5) %}
 {% if project.create_lan_dhcp_server|default(true) %}
 config system dhcp server
   {% for i in project.profiles[profile].interfaces if i.role == 'lan' and i.name is defined %}
@@ -202,8 +204,8 @@ config system dhcp server
     set interface {{ i.name }}
     config ip-range
       edit 1
-        set start-ip {{ i.ip|ipaddr(project.dhcp_server_startip|default(4))|ipaddr('address') }}
-        set end-ip {{ i.ip|ipaddr(project.dhcp_server_endip|default(-5))|ipaddr('address') }}
+        set start-ip {{ i.ip|ipaddr(i.dhcp_server_startip|default(startip))|ipaddr('address') }}
+        set end-ip {{ i.ip|ipaddr(i.dhcp_server_endip|default(endip))|ipaddr('address') }}
       next
     end
   next
