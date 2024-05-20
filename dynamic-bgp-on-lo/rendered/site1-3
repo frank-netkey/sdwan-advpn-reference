@@ -4,6 +4,7 @@ execute batch start
 ######################################
 config system settings
   set location-id 10.200.1.203
+  set allow-subnet-overlap enable
 end
 config system global
   set hostname site1-2
@@ -12,6 +13,12 @@ config system interface
   edit "port1"
     set mode dhcp
     set vrf 0
+    unset egress-shaping-profile
+    unset ingress-shaping-profile
+    unset outbandwidth
+    unset inbandwidth
+    unset estimated-upstream-bandwidth 
+    unset estimated-downstream-bandwidth 
     set role wan
     set allowaccess ping
   next
@@ -20,6 +27,12 @@ config system interface
   edit "port4"
     set mode dhcp
     set vrf 0
+    unset egress-shaping-profile
+    unset ingress-shaping-profile
+    unset outbandwidth
+    unset inbandwidth
+    unset estimated-upstream-bandwidth 
+    unset estimated-downstream-bandwidth 
     set role wan
     set allowaccess ping
   next
@@ -231,6 +244,21 @@ end
 ######################################
 # 03-Edge-Routing.j2
 ######################################
+config router aspath-list
+  edit "SDWAN_AS"
+    config rule
+      purge
+      edit 1
+        set action permit
+        set regexp "65001"
+      next
+      edit 2
+        set action permit
+        set regexp "65002"
+      next
+    end
+  next
+end
 config router route-map
   edit "H1_TAG"
     config rule
@@ -317,6 +345,7 @@ config router bgp
     purge
   end
   config network
+    purge
     edit 111
       set prefix 10.0.3.0/24
       set route-map "LAN_TAG"
@@ -330,10 +359,17 @@ end
 ######################################
 # 04-Edge-InterVRF.j2
 ######################################
-
+config system zone
+  edit "pevrf_leak_zone"
+    unset interface 
+  next
+  edit "vrfs_leak_zone"
+    unset interface 
+  next
+end
 
 ######################################
-# optional/07-Edge-SDWAN.j2
+# optional/11-Edge-SDWAN.j2
 ######################################
 config firewall address
   edit "CORP_LAN"
@@ -351,27 +387,36 @@ config system sdwan
   end
   config members
     edit 1
+      set interface "port1"
+      set zone "underlay"
+      unset source
+      set cost 0
+      # Best priority, used for Internet access in implicit rule / local-out
+      set priority 1
+      # Gateway is fetched from DHCP
+    next
+    edit 2
       set interface "H1_ISP1"
       set priority 10
       set source 10.200.1.203
       set cost 0
       set zone "overlay"
     next
-    edit 2
+    edit 3
       set interface "H1_MPLS"
       set priority 10
       set source 10.200.1.203
       set cost 0
       set zone "overlay"
     next
-    edit 3
+    edit 4
       set interface "H2_ISP1"
       set priority 10
       set source 10.200.1.203
       set cost 0
       set zone "overlay"
     next
-    edit 4
+    edit 5
       set interface "H2_MPLS"
       set priority 10
       set source 10.200.1.203
@@ -385,7 +430,7 @@ config system sdwan
       set sla-fail-log-period 10
       set sla-pass-log-period 10
       set embed-measured-health enable
-      set members 1 2 3 4
+      set members 2 3 4 5
       config sla
         edit 1
           set link-cost-factor latency
@@ -399,18 +444,18 @@ config system sdwan
       set sla-pass-log-period 10
       set update-cascade-interface disable
       set update-static-route disable
-      set members 
+      set members 1
     next
   end
   config neighbor
     edit 10.200.1.253
-      set member 1 2
+      set member 2 3
       set health-check "HUB"
       set sla-id 1
       set minimum-sla-meet-members 1
     next
     edit 10.200.1.254
-      set member 3 4
+      set member 4 5
       set health-check "HUB"
       set sla-id 1
       set minimum-sla-meet-members 1
@@ -429,7 +474,7 @@ config system sdwan
         next
       end
       # Using Hub site1-H1
-      set priority-members 1 2
+      set priority-members 2 3
     next
     edit 2
       set name "Corporate-H2"
@@ -443,7 +488,7 @@ config system sdwan
         next
       end
       # Using Hub site1-H2
-      set priority-members 3 4
+      set priority-members 4 5
     next
     edit 10
       set name "Local-Breakout"
@@ -451,7 +496,7 @@ config system sdwan
       set dst "all"
       set health-check Internet
       # Using best underlay (DIA) link
-      set priority-members 
+      set priority-members 1
     next
   end
 end
@@ -463,7 +508,7 @@ config router static
 end
 
 ######################################
-# optional/08-Edge-Firewall.j2
+# optional/12-Edge-Firewall.j2
 ######################################
 config firewall address
   edit "CORP_LAN"
