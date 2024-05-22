@@ -143,7 +143,8 @@ config router bgp
       set soft-reconfiguration enable
       set capability-graceful-restart enable
       {# TODO: Remove after bug fix #}
-      set allowas-in-enable enable
+      unset allowas-in-enable{{'-vpnv4' if not multi_vrf}}
+      set allowas-in-enable{{'-vpnv4' if multi_vrf}} enable
       {# END TODO: Remove after bug fix #}
       set advertisement-interval 1
       set next-hop-self enable
@@ -151,6 +152,7 @@ config router bgp
       set interface "Lo"
       set update-source "Lo"
       set passive disable
+      unset route-map-out{{'-vpnv4' if not multi_vrf}}
       set route-map-out{{'-vpnv4' if multi_vrf}} "LAN_OUT"
       {% if multi_vrf %}
       set soft-reconfiguration-vpnv4 enable
