@@ -1,8 +1,5 @@
 # Jinja Orchestrator 7.4 (for Fortinet SD-WAN/ADVPN)
 
-NOTE: This is an experimental release currently under active testing. Please use it with care! 
-For a mature release, we recommend using the `release/7.2` branch of this repository!
-
 This repository contains generic, ready-to-use Jinja templates that generate our best-practice SD-WAN/ADVPN configuration.
 These templates are easily tunable for your projects.
 We call them the **Jinja Orchestrator**, because of the layer of abstraction that they provide.
