@@ -55,7 +55,7 @@ config system interface
     set role lan
     set device-identification enable
     {% endif %}
-    set allowaccess {{ 'ping' if not i.access|default(false) else i.access }}
+    set allowaccess {{ 'ping' if not i.access|default(false) else i.access|join(' ') }}
   next
 end
 
