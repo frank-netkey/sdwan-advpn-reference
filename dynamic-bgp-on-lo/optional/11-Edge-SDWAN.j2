@@ -123,13 +123,12 @@ config system sdwan
   {% endfor %}
   end
   config service
-  {% for h in project.regions[region].hubs %}
-    edit {{loop.index}}
-      set name "Corporate-H{{loop.index}}"
+    edit 1
+      set name "Corporate"
       set mode {{ options.sdwan_mode }}
       set dst "CORP_LAN"
       set src "CORP_LAN"
-      set tie-break {{ 'fib-best-match' if not options.advpn2 and not options.dynamic_bgp else 'zone' }}
+      set tie-break fib-best-match
       {% if options.sdwan_mode == 'sla'  %}
       config sla
         edit "HUB"
@@ -139,10 +138,8 @@ config system sdwan
       {% elif options.sdwan_mode == 'priority' %}
       set health-check "HUB"
       {% endif %}
-      # Using Hub {{h}}
-      set priority-members {{ hub_rule_members[loop.index0]|join(' ') }}
+      set priority-members {{ hub_sla_members|join(' ') }}
     next
-  {% endfor %}
   {% if dia_members %}
     edit 10
       set name "Local-Breakout"
