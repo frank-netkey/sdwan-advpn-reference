@@ -16,7 +16,7 @@
         {
           'EDGE': {
             'dynamic_bgp': project.dynamic_bgp|default(false),
-            'lo_summary': project.lo_summary
+            'lo_summary': project.regions[region].lo_summary|default(project.lo_summary)
           }
         }
     )
