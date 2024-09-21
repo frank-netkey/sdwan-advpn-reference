@@ -15,7 +15,8 @@
 
 {# Options: project-wide defaults #}
 {% set options = {
-    'force_cleanup': project.force_cleanup|default(false)
+    'force_cleanup': project.force_cleanup|default(false),
+    'spoke2hub_advpn': project.spoke2hub_advpn|default(false)
   }
 %}
 {# Options can be selectively overriden in profile #}
@@ -115,6 +116,21 @@ end
 
 {# Build Hub-to-Hub BGP peering #}
 
+config router aspath-list
+  edit "SDWAN_AS"
+    config rule
+      purge
+      {# List ASNs of all defined regions, except for ours #}
+      {% for r in project.regions if r != region %}
+      edit {{ loop.index }}
+        set action permit
+        set regexp "{{ project.regions[r].as }}"
+      next
+      {% endfor %}
+    end
+  next
+end
+
 config router access-list
   {# Advertise regional LAN summaries between the regions #}
   edit "LAN_REGIONAL_SUMMARY"
@@ -156,7 +172,7 @@ config router bgp
 end
 
 config router route-map
-  edit "HUB2HUB_OUT"
+  edit "REGION_OUT"
     config rule
       purge
       edit 1
@@ -190,7 +206,7 @@ config router bgp
       set connect-timer 1
       set remote-as {{ project.regions[r].as }}
       unset route-map-out{{'-vpnv4' if not multi_vrf}}
-      set route-map-out{{'-vpnv4' if multi_vrf}} "HUB2HUB_OUT"      
+      set route-map-out{{'-vpnv4' if multi_vrf}} "REGION_OUT"      
       {% if multi_vrf %}
       set soft-reconfiguration-vpnv4 enable
       set capability-graceful-restart-vpnv4 enable
@@ -202,6 +218,35 @@ config router bgp
     {% endfor %}
     {% endfor %}
   end
+  {% if options.spoke2hub_advpn %}
+  config neighbor-group
+    edit "DYN_EDGE"
+      set ebgp-enforce-multihop enable 
+      set soft-reconfiguration enable
+      set capability-graceful-restart enable
+      set advertisement-interval 1
+      set remote-as-filter "SDWAN_AS"
+      set interface "Lo"
+      set update-source "Lo"
+      set passive disable
+      unset route-map-out{{'-vpnv4' if not multi_vrf}}
+      set route-map-out{{'-vpnv4' if multi_vrf}} "REGION_OUT"
+      {% if multi_vrf %}
+      set soft-reconfiguration-vpnv4 enable
+      set capability-graceful-restart-vpnv4 enable      
+      {% else %}
+      unset soft-reconfiguration-vpnv4
+      unset capability-graceful-restart-vpnv4
+      {% endif %}
+    next
+  end
+  config neighbor-range
+    edit {{ 101 + project.hubs[hostname].peering|default([1])|length }}
+      set prefix {{ project.lo_summary }}
+      set neighbor-group "DYN_EDGE"
+    next
+  end
+  {% endif %}   
 end
 
 {# End: multi-regional config #}
