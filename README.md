@@ -56,7 +56,7 @@ By default, the rendered configuration will be saved under the "out" sub-directo
 
 ![](example_project.png)
 
-This project is fully rendered under "dynamic-bgp-on-lo/rendered" directory, using the provided offline renderer.
+This project is fully rendered under "dynamic-bgp-on-lo/rendered/mixed" directory, using the provided offline renderer.
 You can get the same result by running the following:
 
 ```
