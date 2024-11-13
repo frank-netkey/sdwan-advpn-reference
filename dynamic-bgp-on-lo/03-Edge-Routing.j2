@@ -138,8 +138,7 @@ config router bgp
   {% endif %}
   {% if options.dynamic_bgp %}
   config neighbor-group
-    {# START: Awaiting FOS bugfix for remote-as-filter feature #}
-    {# edit "DYN_EDGE"
+    edit "DYN_EDGE"
       set ebgp-enforce-multihop enable 
       set soft-reconfiguration enable
       set capability-graceful-restart enable
@@ -158,43 +157,13 @@ config router bgp
       unset soft-reconfiguration-vpnv4
       unset capability-graceful-restart-vpnv4
       {% endif %}
-    next #}
-    {# END: Awaiting FOS bugfix for remote-as-filter feature #}
-    {% for r in project.regions %}
-    edit "DYN_EDGE_{{r}}"
-      set ebgp-enforce-multihop enable 
-      set soft-reconfiguration enable
-      set capability-graceful-restart enable
-      set advertisement-interval 1
-      set next-hop-self enable
-      set remote-as {{ project.regions[r].as }}
-      set interface "Lo"
-      set update-source "Lo"
-      set passive disable
-      set route-map-out{{'-vpnv4' if multi_vrf}} "LAN_OUT"
-      {% if multi_vrf %}
-      set soft-reconfiguration-vpnv4 enable
-      set capability-graceful-restart-vpnv4 enable      
-      {% else %}
-      unset soft-reconfiguration-vpnv4
-      unset capability-graceful-restart-vpnv4
-      {% endif %}
     next
-    {% endfor %}
   end
   config neighbor-range
-    {# START: Awaiting FOS bugfix for remote-as-filter feature #}
-    {# edit 101
+    edit 101
       set prefix {{ project.lo_summary }}
       set neighbor-group "DYN_EDGE"
-    next #}
-    {# END: Awaiting FOS bugfix for remote-as-filter feature #}
-    {% for r in project.regions %}
-    edit {{ 100 + loop.index }}
-      set prefix {{ project.regions[r].lo_summary }}
-      set neighbor-group "DYN_EDGE_{{r}}"
     next
-    {% endfor %}
   end  
   {% endif %}
 
