@@ -155,7 +155,7 @@ config router bgp
     {% set network_advertised = [] %}
     {% for i in project.profiles[profile].interfaces if i.role == 'lan' %}
     {% if i.name is defined and 
-          i.ip is defined and 
+          i.ip|default()|ipaddr and 
           i.advertise|default(true) and
           not i.ip|ipaddr(0) in network_advertised %}
     edit {{ 110 + loop.index }}
