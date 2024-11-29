@@ -204,6 +204,7 @@ config router route-map
     config rule
       edit 1
         set set-community "no-export"
+        set set-tag 100
       next
     end
   next
@@ -213,7 +214,13 @@ config router route-map
         set set-tag 100
       next
     end
-  next  
+  next 
+  edit "EDGE_OUT"
+    config rule
+      edit 100
+      next
+    end
+  next 
 end
 config router bgp
   set as 65001
@@ -245,13 +252,15 @@ config router bgp
       set update-source "Lo"
       unset route-reflector-client
       set route-reflector-client-vpnv4 disable
+      unset route-map-out
+      set route-map-out-vpnv4 "EDGE_OUT"          
       set soft-reconfiguration-vpnv4 enable
       set capability-graceful-restart-vpnv4 enable      
     next
   end
   config neighbor-range
     edit 101
-      set prefix 10.200.0.0/14
+      set prefix 10.200.1.0/24
       set neighbor-group "EDGE"
     next
   end
@@ -344,6 +353,17 @@ config system zone
     append interface EAST_H1_MPLS
   next
 end
+config router aspath-list
+  edit "SDWAN_AS"
+    config rule
+      purge
+      edit 1
+        set action permit
+        set regexp "65002"
+      next
+    end
+  next
+end
 config router access-list
   edit "LAN_REGIONAL_SUMMARY"
     config rule
@@ -383,23 +403,29 @@ config router bgp
   end
 end
 config router route-map
-  edit "HUB2HUB_OUT"
+  edit "REGION_OUT"
     config rule
       purge
       edit 1
         set match-tag 100
       next
       edit 2
-        set match-ip-address "LAN_REGIONAL_SUMMARY"
+        set match-ip-address "LO_REGIONAL_SUMMARY"
         set set-metric 100
       next
       edit 3
-        set match-ip-address "LO_REGIONAL_SUMMARY"
-        set set-community no-advertise
+        set match-ip-address "LAN_REGIONAL_SUMMARY"
         set set-metric 100
       next
     end
   next
+  edit "EDGE_OUT"
+    config rule
+      edit 100
+        unset match-tag
+      next
+    end
+  next    
 end
 config router bgp
   config neighbor
@@ -413,7 +439,7 @@ config router bgp
       set connect-timer 1
       set remote-as 65002
       unset route-map-out
-      set route-map-out-vpnv4 "HUB2HUB_OUT"      
+      set route-map-out-vpnv4 "REGION_OUT"
       set soft-reconfiguration-vpnv4 enable
       set capability-graceful-restart-vpnv4 enable
     next

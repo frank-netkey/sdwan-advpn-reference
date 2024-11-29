@@ -204,6 +204,7 @@ config router route-map
     config rule
       edit 1
         set set-community "no-export"
+        set set-tag 100
       next
     end
   next
@@ -213,7 +214,13 @@ config router route-map
         set set-tag 100
       next
     end
-  next  
+  next 
+  edit "EDGE_OUT"
+    config rule
+      edit 100
+      next
+    end
+  next 
 end
 config router bgp
   set as 65001
@@ -266,6 +273,8 @@ config router bgp
       set update-source "Lo"
       unset route-reflector-client-vpnv4
       set route-reflector-client disable
+      unset route-map-out-vpnv4
+      set route-map-out "EDGE_OUT"          
       unset soft-reconfiguration-vpnv4
       unset capability-graceful-restart-vpnv4
     next
@@ -351,6 +360,17 @@ config system zone
     append interface EAST_H1_MPLS
   next
 end
+config router aspath-list
+  edit "SDWAN_AS"
+    config rule
+      purge
+      edit 1
+        set action permit
+        set regexp "65002"
+      next
+    end
+  next
+end
 config router access-list
   edit "LAN_REGIONAL_SUMMARY"
     config rule
@@ -386,23 +406,29 @@ config router bgp
   end
 end
 config router route-map
-  edit "HUB2HUB_OUT"
+  edit "REGION_OUT"
     config rule
       purge
       edit 1
         set match-tag 100
       next
       edit 2
-        set match-ip-address "LAN_REGIONAL_SUMMARY"
-        set set-metric 0
+        set match-ip-address "LO_REGIONAL_SUMMARY"
+        set set-metric 50
       next
       edit 3
-        set match-ip-address "LO_REGIONAL_SUMMARY"
-        set set-community no-advertise
-        set set-metric 0
+        set match-ip-address "LAN_REGIONAL_SUMMARY"
+        set set-metric 50
       next
     end
   next
+  edit "EDGE_OUT"
+    config rule
+      edit 100
+        unset match-tag
+      next
+    end
+  next    
 end
 config router bgp
   config neighbor
@@ -416,7 +442,7 @@ config router bgp
       set connect-timer 1
       set remote-as 65002
       unset route-map-out-vpnv4
-      set route-map-out "HUB2HUB_OUT"      
+      set route-map-out "REGION_OUT"
       unset soft-reconfiguration-vpnv4
       unset capability-graceful-restart-vpnv4
     next

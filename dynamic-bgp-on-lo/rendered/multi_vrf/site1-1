@@ -462,30 +462,17 @@ config router bgp
     purge
   end
   config neighbor-group
-    edit "DYN_EDGE_West"
+    edit "DYN_EDGE"
       set ebgp-enforce-multihop enable 
       set soft-reconfiguration enable
       set capability-graceful-restart enable
       set advertisement-interval 1
       set next-hop-self enable
-      set remote-as 65001
+      set remote-as-filter "SDWAN_AS"
       set interface "Lo"
       set update-source "Lo"
       set passive disable
-      set route-map-out-vpnv4 "LAN_OUT"
-      set soft-reconfiguration-vpnv4 enable
-      set capability-graceful-restart-vpnv4 enable      
-    next
-    edit "DYN_EDGE_East"
-      set ebgp-enforce-multihop enable 
-      set soft-reconfiguration enable
-      set capability-graceful-restart enable
-      set advertisement-interval 1
-      set next-hop-self enable
-      set remote-as 65002
-      set interface "Lo"
-      set update-source "Lo"
-      set passive disable
+      unset route-map-out
       set route-map-out-vpnv4 "LAN_OUT"
       set soft-reconfiguration-vpnv4 enable
       set capability-graceful-restart-vpnv4 enable      
@@ -493,12 +480,8 @@ config router bgp
   end
   config neighbor-range
     edit 101
-      set prefix 10.200.1.0/24
-      set neighbor-group "DYN_EDGE_West"
-    next
-    edit 102
-      set prefix 10.200.2.0/24
-      set neighbor-group "DYN_EDGE_East"
+      set prefix 10.200.0.0/14
+      set neighbor-group "DYN_EDGE"
     next
   end  
   config network
