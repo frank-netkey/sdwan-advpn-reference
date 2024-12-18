@@ -285,13 +285,13 @@ config router bgp
     next
     edit "11"
       set role "ce"
-      set rd "65000:11"
+      set rd "10.200.1.254:11"
       set import-rt "65000:11"
       set export-rt "65000:11"
     next
     edit "12"
       set role "ce"
-      set rd "65000:12"
+      set rd "10.200.1.254:12"
       set import-rt "65000:12"
       set export-rt "65000:12"
     next
