@@ -59,8 +59,12 @@ config vpn ipsec phase1-interface
     {% endif %}
     set encapsulation {{ 'vpn-id-ipip' if multi_vrf else 'none' }}
     set exchange-ip-addr4 {{ loopback|ipaddr('address') }}
+    {% if project.hubs[h].overlays[i.ol_type].network_id is defined %}
     set network-overlay enable
     set network-id {{ project.hubs[h].overlays[i.ol_type].network_id }}
+    {% else %}
+    set network-overlay disable
+    {% endif %}
     set remote-gw {{ project.hubs[h].overlays[i.ol_type].wan_ip }}
     set dpd-retrycount 3
     set dpd-retryinterval 5
