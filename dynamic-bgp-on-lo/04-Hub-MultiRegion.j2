@@ -1,11 +1,11 @@
 {# 04-Hub-MultiRegion.j2                                                      #}
-{# Release: 7.4                                                               #}
+{# Release: 7.6                                                               #}
 {# Design flavor: Dynamic BGP on Loopback (unified, ADVPN 2.0 ready)          #}
 {# -------------------------------------------------------------------------- #}
 {# Disclaimer: Normally, this file is not supposed to be edited by users.     #}
 {# -------------------------------------------------------------------------- #}
 
-{% import 'Project' as project with context %}
+{% import '00-Project' as project with context %}
 
 {% set multi_vrf = true if project.regions[region].vrfs|default([]) else false %}
 {% set pe_vrf = project.pe_vrf|default(1) if multi_vrf else 0 %}
