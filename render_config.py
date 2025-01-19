@@ -5,7 +5,7 @@ from ansible_collections.ansible.utils.plugins.filter.ipaddr import ipaddr
 from os import listdir, chdir, path, makedirs, remove
 
 print("===============================================")
-print("Jinja Orchestrator 7.4: Offline Config Renderer")
+print("Jinja Orchestrator 7.6: Offline Config Renderer")
 print("===============================================")
 
 #############################################
@@ -62,7 +62,7 @@ inventory = args.inventory or 0
 
 print("Project Template: " + path.relpath(project))
 print("Inventory: " + (path.relpath(inventory) if inventory else "reading from stdin..."))
-shutil.copyfile(project, flavor + '/Project')
+shutil.copyfile(project, flavor + '/00-Project')
 
 env = jinja2.Environment(
     loader=jinja2.FileSystemLoader(flavor),
@@ -102,4 +102,4 @@ for devgroup, devlist in devices.items():
 
 print()
 print("Rendering complete.")
-remove(flavor + '/Project')
+remove(flavor + '/00-Project')
