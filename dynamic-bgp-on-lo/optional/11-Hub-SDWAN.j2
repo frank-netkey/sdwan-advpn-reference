@@ -40,6 +40,7 @@ config system sdwan
           i.ol_type in project.hubs[hostname].overlays %}
     edit {{ ns.mbr_i }}
       set interface "EDGE_{{ i.ol_type }}"
+      set priority 10
       set zone "overlay"
     next
     {{ hub_sla_members.append(ns.mbr_i) or "" }}
@@ -53,10 +54,9 @@ config system sdwan
       set sla-id-redistribute 1
       config sla
         edit 1
-          set link-cost-factor latency
-          set latency-threshold 100
+          set link-cost-factor remote
           set priority-in-sla 5
-          set priority-out-sla 8
+          set priority-out-sla 995
         next
       end
     next

@@ -82,6 +82,8 @@ config system sdwan
       set source {{ loopback|ipaddr('address') }}
       set cost {{ 10 if i.backup|default(false) else 0 }}
       set zone "overlay"
+      set priority-in-sla {{ 5 + hubloop.index0 }}
+      set priority-out-sla {{ 995 + hubloop.index0 }}
       {% if options.advpn2 %}
       set transport-group {{ i.transport_group|default(0) }}
       {% endif %}
@@ -99,6 +101,7 @@ config system sdwan
       set sla-fail-log-period 10
       set sla-pass-log-period 10
       set embed-measured-health enable
+      set sla-id-redistribute 1
       set members {{ hub_sla_members|join(' ') }}
       config sla
         edit 1
@@ -124,9 +127,8 @@ config system sdwan
   {% for h in project.regions[region].hubs %}
     edit {{ project.hubs[h].lo_bgp }}
       set member {{ hub_rule_members[loop.index0]|join(' ') }}
+      set route-metric priority
       set health-check "HUB"
-      set sla-id 1
-      set minimum-sla-meet-members 1
     next
   {% endfor %}
   end
