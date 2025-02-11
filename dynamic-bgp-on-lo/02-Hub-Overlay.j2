@@ -19,7 +19,6 @@ config vpn ipsec phase1-interface
     set type dynamic
     set interface "{{ i.name }}"
     set ike-version 2
-    set transport udp
     {% if project.cert_auth|default(true) %}
     set authmethod signature
     set certificate "{{ project.hub_cert_template|default('Hub') }}"
