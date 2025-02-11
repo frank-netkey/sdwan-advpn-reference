@@ -48,6 +48,7 @@ config system sdwan
       set zone "underlay"
       {% if i.src_ip is defined %}
       set source {{ i.src_ip|ipaddr('address') }}
+      set preferred-source {{ i.src_ip|ipaddr('address') }}
       {% else %}
       unset source
       {% endif %}
@@ -80,6 +81,7 @@ config system sdwan
       set interface "{{ ol_tun_name }}"
       set priority 10
       set source {{ loopback|ipaddr('address') }}
+      set preferred-source {{ loopback|ipaddr('address') }}
       set cost {{ 10 if i.backup|default(false) else 0 }}
       set zone "overlay"
       set priority-in-sla {{ 5 + hubloop.index0 }}
