@@ -4,7 +4,7 @@
 {# Normally, this is the only file that needs to be edited between            #}
 {# different projects                                                         #}
 {# -------------------------------------------------------------------------- #}
-{# Design flavor: "BGP on Loopback"                                           #}
+{# Design flavor: "Dynamic BGP on Loopback"                                           #}
 {# Please contact your Fortinet representatives for more details              #}
 
 {# This is a quick reference listing supported parameters.                    #}
@@ -37,8 +37,12 @@
 {% set dhcp_server_endip = -5 %}
 
 {% set cert_auth = true %}
+{% set cert_auth_filter = false %}
 {% set hub_cert_template = 'Hub' %}
 {% set edge_cert_template = 'Edge' %}
+{% set edge_cert_filter = 'TheCA' %}
+{% set hub_cert_filter = 'TheCA' %}
+{% set hub_cert_filter_hub2hub = 'TheCA' %}
 {% set psk = 'S3cr3t!' %}
 {% set hub_crl_check = false %}
 {% set crl_scep_url = '' %}
@@ -50,6 +54,7 @@
 {% set intrareg_advpn = true %}
 {% set multireg = true %}
 {% set multireg_advpn = true %}
+{% set spoke2hub_advpn = false %}
 {% set hub_hc_server = '10.200.99.1' %}
 
 {% set advpn2 = true %}
@@ -126,6 +131,7 @@
           'parent': ,
           'access': ,
           'ol_type': ,
+          'ul_name':,
           'outbandwidth': ,
           'inbandwidth': ,
           'shaping_profile': ,
@@ -150,6 +156,7 @@
 {#
 {% set hubs = {
     'HubName': {
+      'hub_name':,
       'lo_bgp': ,
       'peering': {
         'PeeringName': {
