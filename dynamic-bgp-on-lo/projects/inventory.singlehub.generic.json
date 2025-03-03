@@ -1,0 +1,47 @@
+{
+
+  "defaults": {
+    "h1_isp1": "100.64.1.1",  
+    "h1_isp2": "100.64.1.9",
+    "h1_mpls": "172.16.1.5",
+    "region": "SuperWAN"
+  },
+
+  "Hub": {
+
+    "site1-H1": {
+      "hostname": "site1-H1",
+      "loopback": "10.200.1.253",
+      "profile": "Hub",
+      "isp1_intf": "port1",
+      "isp2_intf": "port2",
+      "mpls_intf": "port4",
+      "lan_intf": "port5",
+      "lan_ip": "10.1.0.1/24"
+    }
+  },
+
+  "Edge": {
+
+    "site1-1": {
+      "hostname": "site1-1",
+      "loopback": "10.200.1.1",
+      "profile": "JustBranch",
+      "isp1_intf": "port1",
+      "lan_intf": "port5",
+      "lan_ip": "10.0.1.1/24"
+    },
+
+    "site1-2": {
+      "hostname": "site1-2",
+      "loopback": "10.200.1.2",
+      "profile": "JustBranch",
+      "isp1_intf": "port1",
+      "isp2_intf": "port2",
+      "mpls_intf": "port4",
+      "lan_intf": "port5",
+      "lan_ip": "10.0.2.1/24"
+    }
+
+  }
+}
