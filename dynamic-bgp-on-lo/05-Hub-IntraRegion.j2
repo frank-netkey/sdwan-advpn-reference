@@ -29,6 +29,7 @@
     edit "H{{ my_index }}H{{ peer_index }}_{{ i.ol_type }}"
       set interface "{{ i.name }}"
       set ike-version 2
+      set transport udp
       {% if project.cert_auth|default(true) %}
       set authmethod signature
       set certificate "{{ project.hub_cert_template|default('Hub') }}"
