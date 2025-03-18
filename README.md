@@ -1,4 +1,4 @@
-# Jinja Orchestrator 7.4 (for Fortinet SD-WAN/ADVPN)
+# Jinja Orchestrator 7.6 (for Fortinet SD-WAN/ADVPN)
 
 This repository contains generic, ready-to-use Jinja templates that generate our best-practice SD-WAN/ADVPN configuration.
 These templates are easily tunable for your projects.
@@ -38,7 +38,7 @@ Several Project Template and inventory examples can be found under "dynamic-bgp-
 merely examples! As you can see, the inventory file is in JSON format, it lists the Hubs and the Edges (Spokes) separately and it also 
 supports default variables (that will be applied to all devices).
 
-Note that you can also use your inventory file in CSV format, as accepted by the [Import Model Devices from CSV](https://docs.fortinet.com/document/fortimanager/7.4.3/administration-guide/277097) feature in FortiManager 7.2+.
+Note that you can also use your inventory file in CSV format, as accepted by the [Import Model Devices from CSV](https://docs.fortinet.com/document/fortimanager/7.6.2/administration-guide/277097) feature in FortiManager 7.2+.
 You must still provide two separate CSV files: one for the Hubs and one for the Edges.
 Use the provided converter to generate a JSON inventory from your CSVs and simply chain its output to the renderer, as follows:
 
