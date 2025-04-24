@@ -12,30 +12,32 @@ print("===============================================")
 
 parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter,
                                  usage=textwrap.dedent("""\
-                                 Minimum required arguments are -f <flavor_dir> and -p <project_template>
+                                 Minimum required argument is -p <project_template>
                                  NOTE: To avoid confusion, we NO LONGER have the default choice for the Project Template and the inventory!
+                                       But we DO have a default choice of the design flavor, since it is now unified.
                                  Try --help for more details.
                                  """),
                                  epilog=textwrap.dedent("""\
                                  
                                  NOTE: Unlike in previous versions, we NO LONGER have the default choice for the Project Template and the inventory!
                                  You have to specify them explicitly! If the inventory file is not specified using '-i', it will be read from stdin.
+                                 But we DO use the default design flavor ("dynamic-bgp-on-lo"), unless you customize it with '-f'.
 
                                  Examples:
 
-                                 - Render the entire topology config with "BGP on Loopback" design flavor:
-                                    ./render_config.py -f bgp-on-loopback -i inventory.json -p Project.j2
+                                 - Render the entire topology config with the default design flavor:
+                                    ./render_config.py -p Project.j2 -i inventory.json
 
-                                 - Render the entire topology config with "BGP per Overlay" design flavor:
-                                    ./render_config.py -f bgp-per-overlay -i inventory.json -p Project.j2
+                                 - Render the entire topology config with a custom design flavor:
+                                    ./render_config.py -f my-custom-design -p Project.j2 -i inventory.json
 
-                                 - Render the entire topology config with "BGP on Loopback" design flavor, using CSV inventory file:
-                                    ./inventory_from_csv.py --hub inventory.Hub.csv --edge inventory.Edge.csv | ./render_config.py -f bgp-on-loopback -p Project.j2
+                                 - Render the entire topology config using CSV inventory file:
+                                    ./inventory_from_csv.py --hub inventory.Hub.csv --edge inventory.Edge.csv | ./render_config.py -p Project.j2
 
                                  """))
 
-parser.add_argument('-f', '--flavor', metavar='dir', required=True,
-                    help='design flavor (specify directory name)')
+parser.add_argument('-f', '--flavor', metavar='dir', default='dynamic-bgp-on-lo',
+                    help='design flavor (specify directory name, default = dynamic-bgp-on-lo)')
 
 parser.add_argument('-p', '--project', metavar='file', required=True,
                     help='Project Template')
