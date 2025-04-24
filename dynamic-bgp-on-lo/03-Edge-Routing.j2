@@ -24,11 +24,6 @@
    ) 
 %}
 
-{# For regions with 4-byte ASN, use a dummy 2-byte ASN for BGP communities (4-byte ASN is not supported in communities) #}
-{% set community_as = project.regions[region].as 
-                      if project.regions[region].as|int < 65536 
-                      else project.short_community_as|default('65000') %}
-
 config router aspath-list
   edit "SDWAN_AS"
     config rule
@@ -61,13 +56,6 @@ config router route-map
     end
   next
   {% endfor %}
-  edit "SLA_OK"
-    config rule
-      edit 1
-        set set-community "{{ community_as }}:99"
-      next
-    end
-  next
   edit "LAN_TAG"
     config rule
       edit 1
@@ -109,8 +97,6 @@ config router bgp
       {% else %}
       unset route-map-in
       {% endif %}
-      unset route-map-out{{'-vpnv4' if not multi_vrf}}-preferable
-      set route-map-out{{'-vpnv4' if multi_vrf}}-preferable "SLA_OK" 
       {% if multi_vrf %}
       set soft-reconfiguration-vpnv4 enable
       set capability-graceful-restart-vpnv4 enable
