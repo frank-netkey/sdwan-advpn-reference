@@ -61,12 +61,12 @@ from "dynamic-bgp-on-lo/projects".
 
 Here is the summary of the example projects:
 
-Subfolder            Project Template                        Inventory File
-------------         ------------------------------------    ---------------------------------
-single_hub           Project.singlehub.generic.nocert.j2     inventory.singlehub.generic.json
-deployment_guide     Project.dualreg.cert.j2                 inventory.dualreg.json
-mixed                Project.dualreg.mixed.nocert.j2         inventory.dualreg.mixed.json
-multi_vrf            Project.dualreg.multivrf.nocert.j2      inventory.dualreg.multivrf.json
+| Subfolder        | Description                                                 | Project Template                    | Inventory File                   |
+|------------------|-------------------------------------------------------------|-------------------------------------|----------------------------------|
+| single_hub       | Simple SD-WAN project: one Hub, two Spokes                  | Project.singlehub.generic.nocert.j2 | inventory.singlehub.generic.json |
+| deployment_guide | Dual-region project from the Depoloyment Guide for MSSPs    | Project.dualreg.cert.j2             | inventory.dualreg.json           |
+| mixed            | Dual-region project from the Managed SD-WAN HoL (CustomerU) | Project.dualreg.mixed.nocert.j2     | inventory.dualreg.mixed.json     |
+| multi_vrf        | Dual-region multi-VRF project                               | Project.dualreg.multivrf.nocert.j2  | inventory.dualreg.multivrf.json  |
 
 It is important to emphasize that these projects are **just examples**!
 By no means do they limit what you can do with the Jinja Orchestrator.
