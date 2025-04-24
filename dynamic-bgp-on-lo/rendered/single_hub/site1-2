@@ -39,8 +39,7 @@ config system interface
 end
 config system interface
   edit "port4"
-    set mode static
-    set ip 172.16.0.9/29
+    set mode dhcp
     set vrf 0
     unset egress-shaping-profile
     unset ingress-shaping-profile
@@ -100,9 +99,9 @@ config vpn ipsec phase1-interface
     set interface "port1"
     set ike-version 2
     set transport udp
-    set authmethod signature
-    set certificate "Edge"
+    set authmethod psk
     set peertype any
+    set psksecret S3cr3t!
     set keylife 28800
     set localid site1-2
     set exchange-fgt-device-id enable
@@ -115,8 +114,7 @@ config vpn ipsec phase1-interface
     set add-route disable
     set encapsulation none
     set exchange-ip-addr4 10.200.1.2
-    set network-overlay enable
-    set network-id 11
+    set network-overlay disable
     set remote-gw 100.64.1.1
     set dpd-retrycount 3
     set dpd-retryinterval 5
@@ -143,9 +141,9 @@ config vpn ipsec phase1-interface
     set interface "port2"
     set ike-version 2
     set transport udp
-    set authmethod signature
-    set certificate "Edge"
+    set authmethod psk
     set peertype any
+    set psksecret S3cr3t!
     set keylife 28800
     set localid site1-2
     set exchange-fgt-device-id enable
@@ -158,8 +156,7 @@ config vpn ipsec phase1-interface
     set add-route disable
     set encapsulation none
     set exchange-ip-addr4 10.200.1.2
-    set network-overlay enable
-    set network-id 12
+    set network-overlay disable
     set remote-gw 100.64.1.9
     set dpd-retrycount 3
     set dpd-retryinterval 5
@@ -186,9 +183,9 @@ config vpn ipsec phase1-interface
     set interface "port4"
     set ike-version 2
     set transport udp
-    set authmethod signature
-    set certificate "Edge"
+    set authmethod psk
     set peertype any
+    set psksecret S3cr3t!
     set keylife 28800
     set localid site1-2
     set exchange-fgt-device-id enable
@@ -201,8 +198,7 @@ config vpn ipsec phase1-interface
     set add-route disable
     set encapsulation none
     set exchange-ip-addr4 10.200.1.2
-    set network-overlay enable
-    set network-id 13
+    set network-overlay disable
     set remote-gw 172.16.1.5
     set dpd-retrycount 3
     set dpd-retryinterval 5
@@ -224,135 +220,6 @@ config system interface
     set vrf 0
   next
 end
-config vpn ipsec phase1-interface
-  edit "H2_ISP1"
-    set interface "port1"
-    set ike-version 2
-    set transport udp
-    set authmethod signature
-    set certificate "Edge"
-    set peertype any
-    set keylife 28800
-    set localid site1-2
-    set exchange-fgt-device-id enable
-    set net-device enable
-    set link-cost 0
-    set proposal aes256gcm-prfsha256 aes256-sha256
-    set idle-timeout enable
-    set shared-idle-timeout enable
-    set auto-discovery-receiver enable
-    set add-route disable
-    set encapsulation none
-    set exchange-ip-addr4 10.200.1.2
-    set network-overlay enable
-    set network-id 21
-    set remote-gw 100.64.2.1
-    set dpd-retrycount 3
-    set dpd-retryinterval 5
-    set dpd on-idle    
-    unset local-gw
-    unset monitor
-  next
-end
-config vpn ipsec phase2-interface
-  edit "H2_ISP1"
-    set phase1name "H2_ISP1"
-    set proposal aes256gcm
-    set keepalive enable
-    set keylifeseconds 3600
-  next
-end
-config system interface
-  edit "H2_ISP1"
-    set vrf 0
-  next
-end
-config vpn ipsec phase1-interface
-  edit "H2_ISP2"
-    set interface "port2"
-    set ike-version 2
-    set transport udp
-    set authmethod signature
-    set certificate "Edge"
-    set peertype any
-    set keylife 28800
-    set localid site1-2
-    set exchange-fgt-device-id enable
-    set net-device enable
-    set link-cost 0
-    set proposal aes256gcm-prfsha256 aes256-sha256
-    set idle-timeout enable
-    set shared-idle-timeout enable
-    set auto-discovery-receiver enable
-    set add-route disable
-    set encapsulation none
-    set exchange-ip-addr4 10.200.1.2
-    set network-overlay enable
-    set network-id 22
-    set remote-gw 100.64.2.9
-    set dpd-retrycount 3
-    set dpd-retryinterval 5
-    set dpd on-idle    
-    unset local-gw
-    unset monitor
-  next
-end
-config vpn ipsec phase2-interface
-  edit "H2_ISP2"
-    set phase1name "H2_ISP2"
-    set proposal aes256gcm
-    set keepalive enable
-    set keylifeseconds 3600
-  next
-end
-config system interface
-  edit "H2_ISP2"
-    set vrf 0
-  next
-end
-config vpn ipsec phase1-interface
-  edit "H2_MPLS"
-    set interface "port4"
-    set ike-version 2
-    set transport udp
-    set authmethod signature
-    set certificate "Edge"
-    set peertype any
-    set keylife 28800
-    set localid site1-2
-    set exchange-fgt-device-id enable
-    set net-device enable
-    set link-cost 0
-    set proposal aes256gcm-prfsha256 aes256-sha256
-    set idle-timeout enable
-    set shared-idle-timeout enable
-    set auto-discovery-receiver enable
-    set add-route disable
-    set encapsulation none
-    set exchange-ip-addr4 10.200.1.2
-    set network-overlay enable
-    set network-id 23
-    set remote-gw 172.16.2.5
-    set dpd-retrycount 3
-    set dpd-retryinterval 5
-    set dpd on-idle    
-    unset local-gw
-    unset monitor
-  next
-end
-config vpn ipsec phase2-interface
-  edit "H2_MPLS"
-    set phase1name "H2_MPLS"
-    set proposal aes256gcm
-    set keepalive enable
-    set keylifeseconds 3600
-  next
-end
-config system interface
-  edit "H2_MPLS"
-    set vrf 0
-  next
-end
 
 ######################################
 # 03-Edge-Routing.j2
@@ -364,10 +231,6 @@ config router aspath-list
       edit 1
         set action permit
         set regexp "65001"
-      next
-      edit 2
-        set action permit
-        set regexp "65002"
       next
     end
   next
@@ -414,19 +277,6 @@ config router bgp
   config neighbor
     purge
     edit 10.200.1.253
-      set soft-reconfiguration enable
-      set capability-graceful-restart enable
-      set advertisement-interval 1
-      set interface "Lo"
-      set update-source "Lo"
-      set connect-timer 1
-      set remote-as 65001
-      unset route-map-in
-      unset soft-reconfiguration-vpnv4
-      unset capability-graceful-restart-vpnv4
-      unset route-map-in-vpnv4
-    next
-    edit 10.200.1.254
       set soft-reconfiguration enable
       set capability-graceful-restart enable
       set advertisement-interval 1
@@ -512,6 +362,24 @@ config system sdwan
   end
   config members
     edit 1
+      set interface "port1"
+      set zone "underlay"
+      unset source
+      set cost 0
+      # Best priority, used for Internet access in implicit rule / local-out
+      set priority 1
+      # Gateway is fetched from DHCP
+    next
+    edit 2
+      set interface "port2"
+      set zone "underlay"
+      unset source
+      set cost 0
+      # Best priority, used for Internet access in implicit rule / local-out
+      set priority 1
+      # Gateway is fetched from DHCP
+    next
+    edit 3
       set interface "H1_ISP1"
       set priority 10
       set source 10.200.1.2
@@ -522,7 +390,7 @@ config system sdwan
       set priority-out-sla 995
       set transport-group 0
     next
-    edit 2
+    edit 4
       set interface "H1_ISP2"
       set priority 10
       set source 10.200.1.2
@@ -533,7 +401,7 @@ config system sdwan
       set priority-out-sla 995
       set transport-group 0
     next
-    edit 3
+    edit 5
       set interface "H1_MPLS"
       set priority 10
       set source 10.200.1.2
@@ -544,39 +412,6 @@ config system sdwan
       set priority-out-sla 995
       set transport-group 0
     next
-    edit 4
-      set interface "H2_ISP1"
-      set priority 10
-      set source 10.200.1.2
-      set preferred-source 10.200.1.2
-      set cost 0
-      set zone "overlay"
-      set priority-in-sla 6
-      set priority-out-sla 996
-      set transport-group 0
-    next
-    edit 5
-      set interface "H2_ISP2"
-      set priority 10
-      set source 10.200.1.2
-      set preferred-source 10.200.1.2
-      set cost 0
-      set zone "overlay"
-      set priority-in-sla 6
-      set priority-out-sla 996
-      set transport-group 0
-    next
-    edit 6
-      set interface "H2_MPLS"
-      set priority 10
-      set source 10.200.1.2
-      set preferred-source 10.200.1.2
-      set cost 0
-      set zone "overlay"
-      set priority-in-sla 6
-      set priority-out-sla 996
-      set transport-group 0
-    next
   end
   config health-check
     edit "HUB"
@@ -585,7 +420,7 @@ config system sdwan
       set sla-pass-log-period 10
       set embed-measured-health enable
       set sla-id-redistribute 1
-      set members 1 2 3 4 5 6
+      set members 3 4 5
       config sla
         edit 1
           set link-cost-factor latency
@@ -593,16 +428,18 @@ config system sdwan
         next
       end
     next
-    delete "Internet"
+    edit "Internet"
+      set server "www.fortinet.com"
+      set sla-fail-log-period 10
+      set sla-pass-log-period 10
+      set update-cascade-interface disable
+      set update-static-route disable
+      set members 1 2
+    next
   end
   config neighbor
     edit 10.200.1.253
-      set member 1 2 3
-      set route-metric priority
-      set health-check "HUB"
-    next
-    edit 10.200.1.254
-      set member 4 5 6
+      set member 3 4 5
       set route-metric priority
       set health-check "HUB"
     next
@@ -619,9 +456,16 @@ config system sdwan
           set id 1
         next
       end
-      set priority-members 1 2 3 4 5 6
+      set priority-members 3 4 5
     next
-    delete 10
+    edit 10
+      set name "Local-Breakout"
+      set mode priority
+      set dst "all"
+      set health-check Internet
+      # Using best underlay (DIA) link
+      set priority-members 1 2
+    next
   end
   config zone
     edit "overlay"

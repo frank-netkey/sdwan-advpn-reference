@@ -1,39 +1,35 @@
 execute batch start
 ######################################
-# 01-Edge-Underlay.j2
+# 01-Hub-Underlay.j2
 ######################################
 config system settings
-  set location-id 10.200.2.1
+  set location-id 10.200.1.253
+  set tcp-session-without-syn enable
   set allow-subnet-overlap enable
 end
 config system global
-  set hostname site2-1
+  set hostname site1-H1
 end
 config system interface
   edit "port1"
     set mode dhcp
     set vrf 0
-    unset egress-shaping-profile
-    unset ingress-shaping-profile
-    unset outbandwidth
-    unset inbandwidth
-    unset estimated-upstream-bandwidth 
-    unset estimated-downstream-bandwidth 
+    set role wan
+    set allowaccess ping
+  next
+end
+config system interface
+  edit "port2"
+    set mode dhcp
+    set vrf 0
     set role wan
     set allowaccess ping
   next
 end
 config system interface
   edit "port4"
-    set mode static
-    set ip 172.16.0.17/29
+    set mode dhcp
     set vrf 0
-    unset egress-shaping-profile
-    unset ingress-shaping-profile
-    unset outbandwidth
-    unset inbandwidth
-    unset estimated-upstream-bandwidth 
-    unset estimated-downstream-bandwidth 
     set role wan
     set allowaccess ping
   next
@@ -41,20 +37,26 @@ end
 config system interface
   edit "port5"
     set mode static
-    set ip 10.4.1.1/24
+    set ip 10.1.0.1/24
     set vrf 0
-    set dhcp-relay-service disable
     set role lan
     set device-identification enable
     set allowaccess ping
   next
 end
 config system interface
+  edit "Lo-HC"
+    set vdom root
+    set type loopback
+    set vrf 0
+    set ip 10.200.99.1/32
+    set allowaccess ping
+  next
   edit "Lo"
     set vdom root
     set type loopback
     set vrf 0
-    set ip 10.200.2.1/32
+    set ip 10.200.1.253/32
     set allowaccess ping
   next
 end
@@ -66,138 +68,136 @@ end
 config system dhcp server
   edit 10
     set dns-service default
-    set default-gateway 10.4.1.1
+    set default-gateway 10.1.0.1
     set netmask 255.255.255.0
     set interface port5
     config ip-range
       edit 1
-        set start-ip 10.4.1.4
-        set end-ip 10.4.1.251
+        set start-ip 10.1.0.4
+        set end-ip 10.1.0.251      
       next
     end
   next
 end
 
 ######################################
-# 02-Edge-Overlay.j2
+# 02-Hub-Overlay.j2
 ######################################
 config vpn ipsec phase1-interface
-  edit "H1_ISP1"
+  edit "EDGE_ISP1"
+    set type dynamic
     set interface "port1"
     set ike-version 2
     set transport udp
-    set authmethod signature
-    set certificate "Edge"
+    set authmethod psk
     set peertype any
-    set keylife 28800
-    set localid site2-1
+    set psksecret S3cr3t!
+    set localid ISP1-site1-H1
     set exchange-fgt-device-id enable
-    set net-device enable
-    set link-cost 0
     set proposal aes256gcm-prfsha256 aes256-sha256
-    set idle-timeout enable
-    set shared-idle-timeout enable
-    set auto-discovery-receiver enable
+    set auto-discovery-sender enable
     set add-route disable
     set encapsulation none
-    set exchange-ip-addr4 10.200.2.1
-    set network-overlay enable
-    set network-id 41
-    set remote-gw 100.64.4.1
-    set dpd-retrycount 3
+    set exchange-ip-addr4 10.200.1.253
+    set network-overlay disable
+    set dpd-retrycount 2
     set dpd-retryinterval 5
-    set dpd on-idle    
+    set dpd on-idle
     unset local-gw
-    unset monitor
   next
 end
 config vpn ipsec phase2-interface
-  edit "H1_ISP1"
-    set phase1name "H1_ISP1"
+  edit "EDGE_ISP1"
+    set phase1name "EDGE_ISP1"
     set proposal aes256gcm
     set keepalive enable
-    set keylifeseconds 3600
   next
 end
 config system interface
-  edit "H1_ISP1"
+  edit "EDGE_ISP1"
     set vrf 0
   next
 end
 config vpn ipsec phase1-interface
-  edit "H1_MPLS"
-    set interface "port4"
+  edit "EDGE_ISP2"
+    set type dynamic
+    set interface "port2"
     set ike-version 2
     set transport udp
-    set authmethod signature
-    set certificate "Edge"
+    set authmethod psk
     set peertype any
-    set keylife 28800
-    set localid site2-1
+    set psksecret S3cr3t!
+    set localid ISP2-site1-H1
     set exchange-fgt-device-id enable
-    set net-device enable
-    set link-cost 0
     set proposal aes256gcm-prfsha256 aes256-sha256
-    set idle-timeout enable
-    set shared-idle-timeout enable
-    set auto-discovery-receiver enable
+    set auto-discovery-sender enable
     set add-route disable
     set encapsulation none
-    set exchange-ip-addr4 10.200.2.1
-    set network-overlay enable
-    set network-id 43
-    set remote-gw 172.16.4.5
-    set dpd-retrycount 3
+    set exchange-ip-addr4 10.200.1.253
+    set network-overlay disable
+    set dpd-retrycount 2
     set dpd-retryinterval 5
-    set dpd on-idle    
+    set dpd on-idle
     unset local-gw
-    unset monitor
   next
 end
 config vpn ipsec phase2-interface
-  edit "H1_MPLS"
-    set phase1name "H1_MPLS"
+  edit "EDGE_ISP2"
+    set phase1name "EDGE_ISP2"
     set proposal aes256gcm
     set keepalive enable
-    set keylifeseconds 3600
   next
 end
 config system interface
-  edit "H1_MPLS"
+  edit "EDGE_ISP2"
+    set vrf 0
+  next
+end
+config vpn ipsec phase1-interface
+  edit "EDGE_MPLS"
+    set type dynamic
+    set interface "port4"
+    set ike-version 2
+    set transport udp
+    set authmethod psk
+    set peertype any
+    set psksecret S3cr3t!
+    set localid MPLS-site1-H1
+    set exchange-fgt-device-id enable
+    set proposal aes256gcm-prfsha256 aes256-sha256
+    set auto-discovery-sender enable
+    set add-route disable
+    set encapsulation none
+    set exchange-ip-addr4 10.200.1.253
+    set network-overlay disable
+    set dpd-retrycount 2
+    set dpd-retryinterval 5
+    set dpd on-idle
+    unset local-gw
+  next
+end
+config vpn ipsec phase2-interface
+  edit "EDGE_MPLS"
+    set phase1name "EDGE_MPLS"
+    set proposal aes256gcm
+    set keepalive enable
+  next
+end
+config system interface
+  edit "EDGE_MPLS"
     set vrf 0
   next
 end
 
 ######################################
-# 03-Edge-Routing.j2
+# 03-Hub-Routing.j2
 ######################################
-config router aspath-list
-  edit "SDWAN_AS"
-    config rule
-      purge
-      edit 1
-        set action permit
-        set regexp "65001"
-      next
-      edit 2
-        set action permit
-        set regexp "65002"
-      next
-    end
-  next
-end
 config router route-map
-  edit "H1_TAG"
+  edit "LOCAL_REGION"
     config rule
       edit 1
-        set set-tag 1
-      next
-    end
-  next
-  edit "H2_TAG"
-    config rule
-      edit 1
-        set set-tag 2
+        set set-community "no-export"
+        set set-tag 100
       next
     end
   next
@@ -207,59 +207,46 @@ config router route-map
         set set-tag 100
       next
     end
-  next
-  edit "LAN_OUT"
+  next 
+  edit "EDGE_OUT"
     config rule
-      edit 1
-        set match-tag 100
+      edit 100
       next
-    end  
-  next
+    end
+  next 
 end
 config router bgp
-  set as 65002
-  set router-id 10.200.2.1
+  set as 65001
+  set router-id 10.200.1.253
   set keepalive-timer 15
   set holdtime-timer 45
   set ibgp-multipath enable
+  set ebgp-multipath enable
   set recursive-next-hop enable
-  set tag-resolve-mode disable
+  set recursive-inherit-priority enable
   set graceful-restart enable
-  config neighbor
-    purge
-    edit 10.200.2.253
-      set soft-reconfiguration enable
-      set capability-graceful-restart enable
-      set advertisement-interval 1
-      set interface "Lo"
-      set update-source "Lo"
-      set connect-timer 1
-      set remote-as 65002
-      unset route-map-in
-      unset soft-reconfiguration-vpnv4
-      unset capability-graceful-restart-vpnv4
-      unset route-map-in-vpnv4
-    next
-  end
   config neighbor-range
     purge
   end
   config neighbor-group
     purge
   end
+  config aggregate-address
+    purge
+  end
   config neighbor-group
-    edit "DYN_EDGE"
-      set ebgp-enforce-multihop enable 
+    edit EDGE
       set soft-reconfiguration enable
       set capability-graceful-restart enable
       set advertisement-interval 1
       set next-hop-self enable
-      set remote-as-filter "SDWAN_AS"
+      set remote-as 65001
       set interface "Lo"
       set update-source "Lo"
-      set passive disable
+      unset route-reflector-client-vpnv4
+      set route-reflector-client disable
       unset route-map-out-vpnv4
-      set route-map-out "LAN_OUT"
+      set route-map-out "EDGE_OUT"          
       unset soft-reconfiguration-vpnv4
       unset capability-graceful-restart-vpnv4
     next
@@ -267,13 +254,16 @@ config router bgp
   config neighbor-range
     edit 101
       set prefix 10.200.0.0/14
-      set neighbor-group "DYN_EDGE"
+      set neighbor-group "EDGE"
     next
-  end  
+  end
   config network
-    purge
+    edit 102
+      set prefix 10.200.0.0/14
+      set route-map "LOCAL_REGION"
+    next  
     edit 111
-      set prefix 10.4.1.0/24
+      set prefix 10.1.0.0/24
       set route-map "LAN_TAG"
     next
   end
@@ -281,9 +271,30 @@ config router bgp
     purge
   end
 end
+config router policy
+  purge
+end
+config router static
+  edit 102
+    set dst 10.200.0.0/14
+    set blackhole enable
+    set vrf 0
+    set comment "Avoid potential recursive resolution of corporate BGP routes via underlay"
+  next
+end
 
 ######################################
-# 04-Edge-InterVRF.j2
+# 04-Hub-MultiRegion.j2
+######################################
+
+
+######################################
+# 05-Hub-IntraRegion.j2
+######################################
+
+
+######################################
+# 06-Hub-InterVRF.j2
 ######################################
 config system zone
   edit "pevrf_leak_zone"
@@ -295,128 +306,104 @@ config system zone
 end
 
 ######################################
-# optional/11-Edge-SDWAN.j2
+# 07-Hub-Services.j2
 ######################################
-config firewall address
-  edit "CORP_LAN"
-    set subnet 10.0.0.0/8
-  next
-end
+
+
+######################################
+# optional/11-Hub-SDWAN.j2
+######################################
 config system sdwan
   set status enable
   config zone
     edit "underlay"
     next
     edit "overlay"
-      set advpn-select enable
     next
   end
   config members
     edit 1
-      set interface "H1_ISP1"
-      set priority 10
-      set source 10.200.2.1
-      set preferred-source 10.200.2.1
-      set cost 0
-      set zone "overlay"
-      set priority-in-sla 5
-      set priority-out-sla 995
-      set transport-group 0
+      set interface "port1"
+      set zone "underlay"
+      unset source
+      # Gateway is fetched from DHCP
     next
     edit 2
-      set interface "H1_MPLS"
+      set interface "port2"
+      set zone "underlay"
+      unset source
+      # Gateway is fetched from DHCP
+    next
+    edit 3
+      set interface "EDGE_ISP1"
       set priority 10
-      set source 10.200.2.1
-      set preferred-source 10.200.2.1
-      set cost 0
       set zone "overlay"
-      set priority-in-sla 5
-      set priority-out-sla 995
-      set transport-group 0
+    next
+    edit 4
+      set interface "EDGE_ISP2"
+      set priority 10
+      set zone "overlay"
+    next
+    edit 5
+      set interface "EDGE_MPLS"
+      set priority 10
+      set zone "overlay"
     next
   end
   config health-check
-    edit "HUB"
-      set server 10.200.99.1
-      set sla-fail-log-period 10
-      set sla-pass-log-period 10
-      set embed-measured-health enable
+    edit "EDGE"
+      set detect-mode remote
+      set members 3 4 5
       set sla-id-redistribute 1
-      set members 1 2
       config sla
         edit 1
-          set link-cost-factor latency
-          set latency-threshold 100
+          set link-cost-factor remote
+          set priority-in-sla 5
+          set priority-out-sla 995
         next
       end
     next
-    delete "Internet"
   end
-  config neighbor
-    edit 10.200.2.253
-      set member 1 2
-      set route-metric priority
-      set health-check "HUB"
-    next
-  end
-  config service
-    edit 1
-      set name "Corporate"
-      set mode sla
-      set dst "CORP_LAN"
-      set src "CORP_LAN"
-      set tie-break fib-best-match
-      config sla
-        edit "HUB"
-          set id 1
-        next
-      end
-      set priority-members 1 2
-    next
-    delete 10
-  end
-  config zone
-    edit "overlay"
-      set advpn-health-check "HUB"
-    next
-  end  
 end
 config router static
   edit 100
     # Default route
-    set sdwan-zone "underlay" "overlay"
+    set sdwan-zone "underlay"
   next
 end
 
 ######################################
-# optional/12-Edge-Firewall.j2
+# optional/12-Hub-Firewall.j2
 ######################################
 config firewall address
   edit "CORP_LAN"
     set subnet 10.0.0.0/8
   next
 end
-config firewall ippool
-  edit "Lo"
-    set startip 10.200.2.1
-    set endip 10.200.2.1
-  next
-end
 config firewall policy
   purge
   edit 1
-    set name "Corporate"
-    set srcintf lan_zone "overlay"
-    set dstintf lan_zone "overlay"
+    set name "Edge-Edge"
+    set srcintf overlay
+    set dstintf overlay
     set srcaddr "CORP_LAN"
     set dstaddr "CORP_LAN"
     set action accept
     set schedule "always"
     set service "ALL"
-    set utm-status enable
-    set ssl-ssh-profile certificate-inspection
-    set application-list "default"
-    set logtraffic all
+    # Allow overlay switchover for existing sessions (from shortcut to Hub)
+    set anti-replay disable
+    set tcp-session-without-syn all
+  next
+  edit 2
+    set name "Edge-Hub"
+    set srcintf lan_zone overlay
+    set dstintf lan_zone overlay
+    set srcaddr "CORP_LAN"
+    set dstaddr "CORP_LAN"
+    set action accept
+    set schedule "always"
+    set service "ALL"
   next
   edit 3
     set name "Internet (DIA)"
@@ -435,8 +422,8 @@ config firewall policy
   next
   edit 4
     set name "Internet (RIA)"
-    set srcintf lan_zone
-    set dstintf "overlay"
+    set srcintf "overlay"
+    set dstintf "underlay"
     set srcaddr "all"
     set dstaddr "all"
     set action accept
@@ -446,10 +433,21 @@ config firewall policy
     set ssl-ssh-profile certificate-inspection
     set application-list "default"
     set logtraffic all
+    set nat enable
   next
   edit 5
-    set name "Peering"
+    set name "Health-Check"
     set srcintf "overlay"
+    set dstintf "Lo-HC"
+    set srcaddr "all"
+    set dstaddr "all"
+    set action accept
+    set schedule "always"
+    set service "PING"
+  next
+  edit 6
+    set name "Peering"
+    set srcintf overlay
     set dstintf "Lo"
     set srcaddr "all"
     set dstaddr "all"

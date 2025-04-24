@@ -46,14 +46,14 @@ config system interface
 end
 config system interface
   edit "Lo-HC"
-    set vdom "root"
+    set vdom root
     set type loopback
     set vrf 0
     set ip 10.200.99.1/32
     set allowaccess ping
   next
   edit "Lo"
-    set vdom "root"
+    set vdom root
     set type loopback
     set vrf 0
     set ip 10.200.1.254/32
@@ -88,9 +88,10 @@ config vpn ipsec phase1-interface
     set type dynamic
     set interface "port1"
     set ike-version 2
+    set transport udp
     set authmethod psk
-    set psksecret S3cr3t!
     set peertype any
+    set psksecret S3cr3t!
     set localid ISP1-site1-H2
     set exchange-fgt-device-id enable
     set proposal aes256gcm-prfsha256 aes256-sha256
@@ -123,9 +124,10 @@ config vpn ipsec phase1-interface
     set type dynamic
     set interface "port2"
     set ike-version 2
+    set transport udp
     set authmethod psk
-    set psksecret S3cr3t!
     set peertype any
+    set psksecret S3cr3t!
     set localid ISP2-site1-H2
     set exchange-fgt-device-id enable
     set proposal aes256gcm-prfsha256 aes256-sha256
@@ -158,9 +160,10 @@ config vpn ipsec phase1-interface
     set type dynamic
     set interface "port4"
     set ike-version 2
+    set transport udp
     set authmethod psk
-    set psksecret S3cr3t!
     set peertype any
+    set psksecret S3cr3t!
     set localid MPLS-site1-H2
     set exchange-fgt-device-id enable
     set proposal aes256gcm-prfsha256 aes256-sha256
@@ -192,16 +195,6 @@ end
 ######################################
 # 03-Hub-Routing.j2
 ######################################
-config router community-list
-  edit "SLA_OK"
-    config rule
-      edit 1
-        set action permit
-        set match "65001:99"
-      next
-    end
-  next
-end
 config router route-map
   edit "LOCAL_REGION"
     config rule
@@ -326,10 +319,11 @@ end
         edit "EAST_H1_MPLS"
           set interface "port4"
           set ike-version 2
+          set transport udp
           set authmethod psk
+          set peertype any
           set psksecret S3cr3t!
           set keylife 28800
-          set peertype any
           set exchange-fgt-device-id enable
           set proposal aes256gcm-prfsha256
           set auto-discovery-sender enable
@@ -500,14 +494,17 @@ config system sdwan
     next
     edit 3
       set interface "EDGE_ISP1"
+      set priority 10
       set zone "overlay"
     next
     edit 4
       set interface "EDGE_ISP2"
+      set priority 10
       set zone "overlay"
     next
     edit 5
       set interface "EDGE_MPLS"
+      set priority 10
       set zone "overlay"
     next
   end
@@ -518,10 +515,9 @@ config system sdwan
       set sla-id-redistribute 1
       config sla
         edit 1
-          set link-cost-factor latency
-          set latency-threshold 100
+          set link-cost-factor remote
           set priority-in-sla 5
-          set priority-out-sla 8
+          set priority-out-sla 995
         next
       end
     next

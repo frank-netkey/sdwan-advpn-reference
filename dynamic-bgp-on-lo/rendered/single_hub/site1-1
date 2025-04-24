@@ -3,11 +3,11 @@ execute batch start
 # 01-Edge-Underlay.j2
 ######################################
 config system settings
-  set location-id 10.200.2.1
+  set location-id 10.200.1.1
   set allow-subnet-overlap enable
 end
 config system global
-  set hostname site2-1
+  set hostname site1-1
 end
 config system interface
   edit "port1"
@@ -24,24 +24,9 @@ config system interface
   next
 end
 config system interface
-  edit "port4"
-    set mode static
-    set ip 172.16.0.17/29
-    set vrf 0
-    unset egress-shaping-profile
-    unset ingress-shaping-profile
-    unset outbandwidth
-    unset inbandwidth
-    unset estimated-upstream-bandwidth 
-    unset estimated-downstream-bandwidth 
-    set role wan
-    set allowaccess ping
-  next
-end
-config system interface
   edit "port5"
     set mode static
-    set ip 10.4.1.1/24
+    set ip 10.0.1.1/24
     set vrf 0
     set dhcp-relay-service disable
     set role lan
@@ -54,7 +39,7 @@ config system interface
     set vdom root
     set type loopback
     set vrf 0
-    set ip 10.200.2.1/32
+    set ip 10.200.1.1/32
     set allowaccess ping
   next
 end
@@ -66,13 +51,13 @@ end
 config system dhcp server
   edit 10
     set dns-service default
-    set default-gateway 10.4.1.1
+    set default-gateway 10.0.1.1
     set netmask 255.255.255.0
     set interface port5
     config ip-range
       edit 1
-        set start-ip 10.4.1.4
-        set end-ip 10.4.1.251
+        set start-ip 10.0.1.4
+        set end-ip 10.0.1.251
       next
     end
   next
@@ -86,11 +71,11 @@ config vpn ipsec phase1-interface
     set interface "port1"
     set ike-version 2
     set transport udp
-    set authmethod signature
-    set certificate "Edge"
+    set authmethod psk
     set peertype any
+    set psksecret S3cr3t!
     set keylife 28800
-    set localid site2-1
+    set localid site1-1
     set exchange-fgt-device-id enable
     set net-device enable
     set link-cost 0
@@ -100,10 +85,9 @@ config vpn ipsec phase1-interface
     set auto-discovery-receiver enable
     set add-route disable
     set encapsulation none
-    set exchange-ip-addr4 10.200.2.1
-    set network-overlay enable
-    set network-id 41
-    set remote-gw 100.64.4.1
+    set exchange-ip-addr4 10.200.1.1
+    set network-overlay disable
+    set remote-gw 100.64.1.1
     set dpd-retrycount 3
     set dpd-retryinterval 5
     set dpd on-idle    
@@ -124,49 +108,6 @@ config system interface
     set vrf 0
   next
 end
-config vpn ipsec phase1-interface
-  edit "H1_MPLS"
-    set interface "port4"
-    set ike-version 2
-    set transport udp
-    set authmethod signature
-    set certificate "Edge"
-    set peertype any
-    set keylife 28800
-    set localid site2-1
-    set exchange-fgt-device-id enable
-    set net-device enable
-    set link-cost 0
-    set proposal aes256gcm-prfsha256 aes256-sha256
-    set idle-timeout enable
-    set shared-idle-timeout enable
-    set auto-discovery-receiver enable
-    set add-route disable
-    set encapsulation none
-    set exchange-ip-addr4 10.200.2.1
-    set network-overlay enable
-    set network-id 43
-    set remote-gw 172.16.4.5
-    set dpd-retrycount 3
-    set dpd-retryinterval 5
-    set dpd on-idle    
-    unset local-gw
-    unset monitor
-  next
-end
-config vpn ipsec phase2-interface
-  edit "H1_MPLS"
-    set phase1name "H1_MPLS"
-    set proposal aes256gcm
-    set keepalive enable
-    set keylifeseconds 3600
-  next
-end
-config system interface
-  edit "H1_MPLS"
-    set vrf 0
-  next
-end
 
 ######################################
 # 03-Edge-Routing.j2
@@ -178,10 +119,6 @@ config router aspath-list
       edit 1
         set action permit
         set regexp "65001"
-      next
-      edit 2
-        set action permit
-        set regexp "65002"
       next
     end
   next
@@ -217,8 +154,8 @@ config router route-map
   next
 end
 config router bgp
-  set as 65002
-  set router-id 10.200.2.1
+  set as 65001
+  set router-id 10.200.1.1
   set keepalive-timer 15
   set holdtime-timer 45
   set ibgp-multipath enable
@@ -227,14 +164,14 @@ config router bgp
   set graceful-restart enable
   config neighbor
     purge
-    edit 10.200.2.253
+    edit 10.200.1.253
       set soft-reconfiguration enable
       set capability-graceful-restart enable
       set advertisement-interval 1
       set interface "Lo"
       set update-source "Lo"
       set connect-timer 1
-      set remote-as 65002
+      set remote-as 65001
       unset route-map-in
       unset soft-reconfiguration-vpnv4
       unset capability-graceful-restart-vpnv4
@@ -273,7 +210,7 @@ config router bgp
   config network
     purge
     edit 111
-      set prefix 10.4.1.0/24
+      set prefix 10.0.1.0/24
       set route-map "LAN_TAG"
     next
   end
@@ -313,21 +250,19 @@ config system sdwan
   end
   config members
     edit 1
-      set interface "H1_ISP1"
-      set priority 10
-      set source 10.200.2.1
-      set preferred-source 10.200.2.1
+      set interface "port1"
+      set zone "underlay"
+      unset source
       set cost 0
-      set zone "overlay"
-      set priority-in-sla 5
-      set priority-out-sla 995
-      set transport-group 0
+      # Best priority, used for Internet access in implicit rule / local-out
+      set priority 1
+      # Gateway is fetched from DHCP
     next
     edit 2
-      set interface "H1_MPLS"
+      set interface "H1_ISP1"
       set priority 10
-      set source 10.200.2.1
-      set preferred-source 10.200.2.1
+      set source 10.200.1.1
+      set preferred-source 10.200.1.1
       set cost 0
       set zone "overlay"
       set priority-in-sla 5
@@ -342,7 +277,7 @@ config system sdwan
       set sla-pass-log-period 10
       set embed-measured-health enable
       set sla-id-redistribute 1
-      set members 1 2
+      set members 2
       config sla
         edit 1
           set link-cost-factor latency
@@ -350,11 +285,18 @@ config system sdwan
         next
       end
     next
-    delete "Internet"
+    edit "Internet"
+      set server "www.fortinet.com"
+      set sla-fail-log-period 10
+      set sla-pass-log-period 10
+      set update-cascade-interface disable
+      set update-static-route disable
+      set members 1
+    next
   end
   config neighbor
-    edit 10.200.2.253
-      set member 1 2
+    edit 10.200.1.253
+      set member 2
       set route-metric priority
       set health-check "HUB"
     next
@@ -371,9 +313,16 @@ config system sdwan
           set id 1
         next
       end
-      set priority-members 1 2
+      set priority-members 2
     next
-    delete 10
+    edit 10
+      set name "Local-Breakout"
+      set mode priority
+      set dst "all"
+      set health-check Internet
+      # Using best underlay (DIA) link
+      set priority-members 1
+    next
   end
   config zone
     edit "overlay"
@@ -398,8 +347,8 @@ config firewall address
 end
 config firewall ippool
   edit "Lo"
-    set startip 10.200.2.1
-    set endip 10.200.2.1
+    set startip 10.200.1.1
+    set endip 10.200.1.1
   next
 end
 config firewall policy

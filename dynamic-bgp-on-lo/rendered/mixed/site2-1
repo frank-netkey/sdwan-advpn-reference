@@ -50,7 +50,7 @@ config system interface
 end
 config system interface
   edit "Lo"
-    set vdom "root"
+    set vdom root
     set type loopback
     set vrf 0
     set ip 10.200.2.1/32
@@ -84,16 +84,18 @@ config vpn ipsec phase1-interface
   edit "H1_ISP1"
     set interface "port1"
     set ike-version 2
+    set transport udp
     set authmethod psk
+    set peertype any
     set psksecret S3cr3t!
     set keylife 28800
-    set peertype any
     set localid site2-1
     set exchange-fgt-device-id enable
     set net-device enable
     set link-cost 0
     set proposal aes256gcm-prfsha256 aes256-sha256
     set idle-timeout enable
+    set shared-idle-timeout enable
     set auto-discovery-receiver enable
     set add-route disable
     set encapsulation none
@@ -125,16 +127,18 @@ config vpn ipsec phase1-interface
   edit "H1_MPLS"
     set interface "port4"
     set ike-version 2
+    set transport udp
     set authmethod psk
+    set peertype any
     set psksecret S3cr3t!
     set keylife 28800
-    set peertype any
     set localid site2-1
     set exchange-fgt-device-id enable
     set net-device enable
     set link-cost 0
     set proposal aes256gcm-prfsha256 aes256-sha256
     set idle-timeout enable
+    set shared-idle-timeout enable
     set auto-discovery-receiver enable
     set add-route disable
     set encapsulation none
@@ -196,13 +200,6 @@ config router route-map
       next
     end
   next
-  edit "SLA_OK"
-    config rule
-      edit 1
-        set set-community "65002:99"
-      next
-    end
-  next
   edit "LAN_TAG"
     config rule
       edit 1
@@ -238,8 +235,6 @@ config router bgp
       set connect-timer 1
       set remote-as 65002
       unset route-map-in
-      unset route-map-out-vpnv4-preferable
-      set route-map-out-preferable "SLA_OK" 
       unset soft-reconfiguration-vpnv4
       unset capability-graceful-restart-vpnv4
       unset route-map-in-vpnv4
@@ -329,16 +324,22 @@ config system sdwan
       set interface "H1_ISP1"
       set priority 10
       set source 10.200.2.1
+      set preferred-source 10.200.2.1
       set cost 0
       set zone "overlay"
+      set priority-in-sla 5
+      set priority-out-sla 995
       set transport-group 0
     next
     edit 3
       set interface "H1_MPLS"
       set priority 10
       set source 10.200.2.1
+      set preferred-source 10.200.2.1
       set cost 0
       set zone "overlay"
+      set priority-in-sla 5
+      set priority-out-sla 995
       set transport-group 2
     next
   end
@@ -348,6 +349,7 @@ config system sdwan
       set sla-fail-log-period 10
       set sla-pass-log-period 10
       set embed-measured-health enable
+      set sla-id-redistribute 1
       set members 2 3
       config sla
         edit 1
@@ -368,9 +370,8 @@ config system sdwan
   config neighbor
     edit 10.200.2.253
       set member 2 3
+      set route-metric priority
       set health-check "HUB"
-      set sla-id 1
-      set minimum-sla-meet-members 1
     next
   end
   config service

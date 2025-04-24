@@ -52,15 +52,30 @@ those under the "dynamic-bgp-on-lo/optional" sub-directiory. These optional temp
 
 By default, the rendered configuration will be saved under the "out" sub-directory. This can be customized with `-o` flag.
 
-## Example Project
+## Example Projects
 
-![](example_project.png)
+Under "dynamic-bgp-on-lo/rendered", you will find a couple of fully rendered example projects.
+The diagrams for each project can be found in each respective subfolder. 
+Each example project has been rendered using the provided offline renderer ("render_config.py") and a pair of Project and inventory files
+from "dynamic-bgp-on-lo/projects".
 
-This project is fully rendered under "dynamic-bgp-on-lo/rendered/mixed" directory, using the provided offline renderer.
-You can get the same result by running the following:
+Here is the summary of the example projects:
+
+Subfolder            Project Template                        Inventory File
+------------         ------------------------------------    ---------------------------------
+single_hub           Project.singlehub.generic.nocert.j2     inventory.singlehub.generic.json
+deployment_guide     Project.dualreg.cert.j2                 inventory.dualreg.json
+mixed                Project.dualreg.mixed.nocert.j2         inventory.dualreg.mixed.json
+multi_vrf            Project.dualreg.multivrf.nocert.j2      inventory.dualreg.multivrf.json
+
+It is important to emphasize that these projects are **just examples**!
+By no means do they limit what you can do with the Jinja Orchestrator.
+It can be helpful to start from one of the example Project Templates when you prepare your own. 
+
+For example, you can render the same configuration as in the "deployment_guide" subfolder, by running the following:
 
 ```
-./render_config.py -f dynamic-bgp-on-lo -p dynamic-bgp-on-lo/projects/Project.dualreg.mixed.nocert.j2 -i dynamic-bgp-on-lo/projects/inventory.dualreg.mixed.json
+./render_config.py -p dynamic-bgp-on-lo/projects/Project.dualreg.cert.j2 -i dynamic-bgp-on-lo/projects/inventory.dualreg.json
 ```
 
 ## Credits and Feedback
