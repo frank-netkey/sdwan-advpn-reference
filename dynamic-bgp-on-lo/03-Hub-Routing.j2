@@ -98,7 +98,8 @@ config router bgp
       set interface "Lo"
       set update-source "Lo"
       unset route-reflector-client{{'-vpnv4' if not multi_vrf}}
-      {% if not peering[p].dynamic_bgp and project.intrareg_advpn|default(true) %}
+      {% if (peering[p].bgp_rr|default(false)) or 
+            (not peering[p].dynamic_bgp and project.intrareg_advpn|default(true)) %}
       set route-reflector-client{{'-vpnv4' if multi_vrf}} enable
       {% else %}
       set route-reflector-client{{'-vpnv4' if multi_vrf}} disable
