@@ -27,12 +27,8 @@ pip3 install jinja2 ansible netaddr
 Usage: 
 
 ```
-./render_config.py -f <flavor_dir> -p <project_template> -i <inventory_file>
+./render_config.py -p <project_template> -i <inventory_file>
 ```
-
-The `<flavor_dir>` is the directory with the Jinja templates of your chosen design flavor.
-The choice is simple, because at the moment of this writing we provide a single unified flavor in the "dynamic-bgp-on-lo" directory. 
-Hence, always use `-f dynamic-bgp-on-lo`. 
 
 Several Project Template and inventory examples can be found under "dynamic-bgp-on-lo/project" directory. But keep in mind that those are 
 merely examples! As you can see, the inventory file is in JSON format, it lists the Hubs and the Edges (Spokes) separately and it also 
@@ -43,7 +39,7 @@ You must still provide two separate CSV files: one for the Hubs and one for the 
 Use the provided converter to generate a JSON inventory from your CSVs and simply chain its output to the renderer, as follows:
 
 ```
-./inventory_from_csv.py --hubs inventory.Hubs.csv --edge inventory.Edge.csv | ./render_config.py -f dynamic-bgp-on-lo -p Project.j2
+./inventory_from_csv.py --hubs inventory.Hubs.csv --edge inventory.Edge.csv | ./render_config.py -p Project.j2
 ```
 
 The offline rendering differs from the FortiManager-based rendering, because it must cover the entire configuration - including those parts
