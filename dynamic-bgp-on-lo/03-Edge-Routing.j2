@@ -15,7 +15,8 @@
 {% set options = {
     'advpn2': project.advpn2|default(true),
     'dynamic_bgp': project.dynamic_bgp|default(false),
-    'strict_peering': project.strict_peering|default(true)
+    'strict_peering': project.strict_peering|default(true),
+    'tag_resolve_mode': project.tag_resolve_mode
   }
 %}
 {# Options can be selectively overriden in profile #}
@@ -23,6 +24,15 @@
       project.profiles[profile].options|default({})
    ) 
 %}
+{# If not explicitly configured, use recommended defaults for tag-resolve-mode #}
+{% if options.tag_resolve_mode is not defined %}
+  {% set _ = options.update(
+        {
+          'tag_resolve_mode': 'merge' if not options.advpn2 else 'disable'
+        }
+    ) 
+  %}
+{% endif %}
 
 config router aspath-list
   edit "SDWAN_AS"
@@ -79,7 +89,7 @@ config router bgp
   set holdtime-timer 45
   set ibgp-multipath enable
   set recursive-next-hop enable
-  set tag-resolve-mode {{ 'merge' if not options.advpn2 else 'disable' }}
+  set tag-resolve-mode {{ options.tag_resolve_mode }}
   set graceful-restart enable
   config neighbor
     {{ 'purge' if options.strict_peering or "" }}
@@ -92,7 +102,7 @@ config router bgp
       set update-source "Lo"
       set connect-timer 1
       set remote-as {{ project.regions[region].as }}
-      {% if not options.advpn2 %}
+      {% if options.tag_resolve_mode != 'disable' %}
       set route-map-in "H{{loop.index}}_TAG"
       {% else %}
       unset route-map-in
@@ -100,7 +110,7 @@ config router bgp
       {% if multi_vrf %}
       set soft-reconfiguration-vpnv4 enable
       set capability-graceful-restart-vpnv4 enable
-        {% if not options.advpn2 %}
+        {% if options.tag_resolve_mode != 'disable' %}
         set route-map-in-vpnv4 "H{{loop.index}}_TAG"
         {% else %}
         unset route-map-in-vpnv4
