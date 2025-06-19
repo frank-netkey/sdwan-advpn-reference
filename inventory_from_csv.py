@@ -41,7 +41,7 @@ def parseCSV(csvFile):
         dev_name = d.pop('Name')
         d.pop('Serial Number')
         d.pop('Device Blueprint')
-        dev_dict[dev_name] = { k : v for k, v in d.items() }
+        dev_dict[dev_name] = { k : v for k, v in d.items() if v }
       
   return dev_dict
 
