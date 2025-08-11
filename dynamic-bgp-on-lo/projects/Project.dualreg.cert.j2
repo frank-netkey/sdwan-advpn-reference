@@ -66,6 +66,34 @@
       ]
    },
 
+   'Silver-SDB': {
+      'interfaces': [
+         {
+            'name': 'port1',
+            'role': 'wan',
+            'ol_type': 'ISP1',
+            'ip': 'dhcp'
+         },
+         {
+            'name': 'port4',
+            'role': 'wan',
+            'ol_type': 'MPLS',
+            'ip': mpls_wan_ip
+         },
+         {
+            'name': 'port8',
+            'role': 'sd_branch'
+         },
+         {
+            'name': 'vl_users',
+            'role': 'lan',
+            'vlanid': 10,
+            'parent': 'fortilink',
+            'ip': lan_ip
+         }
+      ]
+   },   
+
    'Gold': {
       'interfaces': [
          {
